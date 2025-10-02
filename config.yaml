@@ -1,0 +1,5 @@
+dataset: 
+  name: shuyangli94/food-com-recipes-and-user-interactions
+  files:
+    - RAW_interactions.csv
+    - RAW_recipes.csv
