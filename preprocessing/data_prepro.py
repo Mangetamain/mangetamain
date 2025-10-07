@@ -119,3 +119,96 @@ class IngredientPreprocessor:
                 categorized['other'].append(ing)
         return dict(categorized)
 
+class NutritionPreprocessor:
+    NUTRITION_FIELDS = ['calories', 'fat', 'total_fat', 'carbohydrates', 
+                        'sugar', 'protein', 'sodium']
+    
+    def parse_nutrition(self, nutrition_str: str) -> Dict[str, float]:
+        """
+        Parse la chaîne de nutrition en dictionnaire avec valeurs float. 
+        "[calories, fat, sugar, ...]" -> {'calories': val, 'fat': val, ...}
+        """
+        try:
+            values = ast.literal_eval(nutrition_str)
+            # Vérifier que nous avons le bon nombre de valeurs
+            if len(values) != len(NutritionPreprocessor.NUTRITION_FIELDS):
+                logger.warning(f"Nombre incorrect de valeurs nutritionnelles: {len(values)}")
+                return {}
+            nutrition_dict = dict(zip(NutritionPreprocessor.NUTRITION_FIELDS, 
+                                     [float(v) for v in values]))
+            return nutrition_dict
+        except (ValueError, SyntaxError) as e:
+            logger.error(f"Erreur parsing nutrition: {e}")
+            return {}
+@staticmethod
+def compute_health_score(nutrition: Dict[str,float])->float:
+    """construction d'un score de nutrition simple (0-1)"""
+    if not nutrition:
+        return 0.5  # score neutre si pas de données
+    # Calculer un score basé sur les nutriments
+    penalties = 0.0
+    penalties += max(0, (nutrition.get('calories', 0) - 600) / 2000)
+    penalties += max(0, (nutrition.get('sugar', 0) - 50) / 200)
+    penalties += max(0, (nutrition.get('sodium', 0) - 1000) / 4000)
+
+    protein_bonus = min(nutrition.get('protein', 0) / 50, 0.3)
+    score = max(0, min(1, 1-penalties + protein_bonus))
+    return round(score, 2)
+class TagsPreprocessor:
+    """extraction de l'information structurées a partir des tags"""
+    MEAL_TYPES= {'breakfast': ['breakfast', 'brunch'],
+                 'lunch': ['lunch', 'main-dish'],
+                 'dinner': ['dinner', 'main-dish'],
+                 'snack': ['snacks', 'appetizers']}
+    DIETARY = {
+        'vegetarian': ['vegetarian', 'vegan'],
+        'vegan': ['vegan'],
+        'low-carb': ['low-carb', 'low-carbohydrate'],
+        'gluten-free': ['gluten-free'],
+        'dairy-free': ['dairy-free', 'lactose-free'],
+        'healthy': ['healthy', 'low-fat', 'low-sodium', 'low-calorie']
+    }
+    CUISINES = [
+        'mexican', 'italian', 'chinese', 'indian', 'french', 'thai',
+        'japanese', 'greek', 'spanish', 'american', 'mediterranean'
+    ]
+    @staticmethod
+    def parse_tags(tags_str:str) -> Set[str]:
+        """nettoyer les tags"""
+        try: 
+            tags = ast.literal_eval(tags_str)
+            return { tag.lower().strip() for tag in tags }
+        except (ValueError, SyntaxError) as e:
+            logger.error(f"Erreur parsing tags: {e}")
+            return set()
+    @classmethod
+    def extract_meal_type(cls, tags:Set[str]) -> Optional[str]:
+        for meal_type, keywords in cls.MEAL_TYPES.items():
+            if any(keyword in tags for keyword in keywords):
+                return meal_type
+        return None
+    @classmethod 
+    def extract_dietary_restriction(cls, tags:Set[str])-> List[str]:
+        restrictions = []
+        for restriction, keywords in cls.DIETARY.items():
+            if any(keyword in tags for keyword in keywords):
+                restrictions.append(restriction)
+        return restrictions
+    @classmethod
+    def extract_cuisine_type(cls, tags:Set[str])-> Optional[str]:
+        for cuisine in cls.CUISINES:
+            if cuisine in tags:
+                return cuisine
+        return None
+    @staticmethod
+    def extract_time_constrained(tags:Set[str])-> bool:
+        time_patterns = {
+            '15-minutes-or-less': 15,
+            '30-minutes-or-less': 30,
+            '60-minutes-or-less': 60,
+            '4-hours-or-less': 240
+        }
+        for pattern, minutes in time_patterns.items():
+            if pattern in tags:
+                return minutes
+        return None
