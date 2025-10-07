@@ -1,3 +1,3 @@
 pyYAML
 kagglehub
-pip install pandas==1.5.3
+pandas==1.5.3
