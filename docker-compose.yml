@@ -1,0 +1,34 @@
+services:
+  preprocessing:
+    build: ./preprocessing
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./preprocessing:/app
+    environment:
+      - POETRY_CACHE_DIR=/tmp/poetry_cache
+    working_dir: /app
+    command: bash -c "poetry install && poetry run jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root --NotebookApp.token='' --NotebookApp.password=''"
+    stdin_open: true
+    tty: true
+    networks:
+      - app-network
+
+  streamlit-app:
+    build: ./streamlit-poetry-docker
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./streamlit-poetry-docker:/app
+    environment:
+      - POETRY_CACHE_DIR=/tmp/poetry_cache
+    working_dir: /app
+    command: poetry run streamlit run app.py --server.address=0.0.0.0 --server.port=8501
+    depends_on:
+      - preprocessing
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
