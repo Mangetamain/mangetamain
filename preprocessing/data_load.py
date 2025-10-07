@@ -2,6 +2,7 @@ import kagglehub
 import pandas as pd 
 import os
 import yaml
+import pickle
 
 with open("config.yaml", 'r') as f:
     config = yaml.safe_load(f)
@@ -16,7 +17,11 @@ def load_data(path,files)->pd.DataFrame:
     for file in files : 
         file_path = os.path.join(path, file)
         if os.path.exists(file_path):
-            data_frames[file] = pd.read_csv(file_path)
+            if file.endswith('csv'):
+                data_frames[file] = pd.read_csv(file_path)
+            elif file.endswith('pkl'):
+                with open(file_path, 'rb') as f:
+                    data_frames[file] = pickle.load(f)
         else:
             raise FileNotFoundError(f"{file} introuvable dans le {path}")
     return data_frames
@@ -24,10 +29,11 @@ def load_data(path,files)->pd.DataFrame:
 if __name__ == "__main__":
     dataset_path = fetch_data(config['dataset']['name'])
     dfs = load_data(dataset_path, config['dataset']['files'])
+    ingr_map = dfs.get('ingr_map.pkl')
     for name, df in dfs.items():
         print(f"Data from {name}:")
         print(df.head())
     recipes_df = dfs.get('RAW_recipes.csv')
     interactions_df = dfs.get('RAW_interactions.csv')
     print(" Recipes shape:", recipes_df.shape)
-    print(" Interactions shape:", interactions_df.shape)
+    print(" Interactions shape:", interactions_df.shape) 
