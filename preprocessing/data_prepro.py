@@ -58,9 +58,8 @@ class IngredientPreprocessor:
     
     def _load_ingredient_map(self, ingr_map_path: str):
         try:
-            import pickle
-            with open(ingr_map_path, 'rb') as f:
-                self.ingr_map = pickle.load(f)
+            # Charger le fichier CSV au lieu du fichier PKL
+            self.ingr_map = pd.read_csv(ingr_map_path)
             for _, row in self.ingr_map.iterrows():
                 raw = row['raw_ingr'].lower().strip()
                 normalized = row.get('replaced', row.get('normalized', raw))
@@ -72,10 +71,17 @@ class IngredientPreprocessor:
             
     def normalize_ingredient(self, raw_ingredient:str) -> str:
         if self.ingr_map is not None:
-            # chercher dans la mapping
+            # Première tentative: correspondance exacte
             raw_lower = raw_ingredient.lower().strip()
             if raw_lower in self.raw_to_normalized:
                 return self.raw_to_normalized[raw_lower]
+            
+            # Deuxième tentative: nettoyer d'abord puis chercher dans la carte
+            pre_cleaned = self._manual_clean(raw_ingredient)
+            if pre_cleaned in self.raw_to_normalized:
+                return self.raw_to_normalized[pre_cleaned]
+        
+        # Fallback: nettoyage manuel seulement
         return self._manual_clean(raw_ingredient)
     
     def _manual_clean(self, ingredient: str) -> str:
