@@ -6,7 +6,7 @@ import re
 import logging
 from dataclasses import dataclass
 from typing import List, Set, Dict, Optional
-from collections import defaultdict
+from collections import defaultdict, Counter
 
 # configuration du logger
 logging.basicConfig(level=logging.INFO)
@@ -218,3 +218,155 @@ class TagsPreprocessor:
             if pattern in tags:
                 return minutes
         return None
+class StepsPreprocessor:
+    COOKING_TECHNIQUES = {
+        'bake', 'boil', 'fry', 'grill', 'roast', 'steam', 'sauté',
+        'simmer', 'mix', 'blend', 'whisk', 'chop', 'dice', 'marinate',
+        'season', 'garnish', 'broil', 'poach', 'braise', 'stir-fry'
+    }
+    @staticmethod
+    def parse_steps(steps_str: str)-> List[str]:
+        try:
+            steps = ast.literal_eval(steps_str)
+            return [step.lower().strip() for step in steps]
+        except (ValueError, SyntaxError) as e:
+            logger.error(f"Erreur parsing steps: {e}")
+            return []
+    @classmethod
+    def extract_techniques(cls, steps: List[str])-> Set[str]:
+        techniques = set()
+        for step in steps:
+            for technique in cls.COOKING_TECHNIQUES:
+                if technique in step:
+                    techniques.add(technique)
+        return techniques
+    @staticmethod
+    def compute_effort_score(n_steps: int, steps:List[str])-> float:
+        #score d'effort normalisé 0=facile, 1=difficile
+        step_factor = min(n_steps / 20, 1.0) * 0.6
+        avg_length = np.mean([len(step.split()) for step in steps]) if steps else 0
+        length_factor = min(avg_length / 30, 1.0) * 0.3
+        complex_words = ['carefully', 'slowly', 'constantly', 'meanwhile', 
+                         'simultaneously', 'gradually']
+        complexity_count = sum(any(word in step for word in complex_words) 
+                              for step in steps)
+        complexity_factor = min(complexity_count / 5, 1.0) * 0.1
+        
+        return step_factor + length_factor + complexity_factor
+class DescriptionPreprocessor:
+    @staticmethod
+    def extract_keywords(description: str, top_n: int = 5) -> List[str]:
+        
+        if not description or pd.isna(description):
+            return []
+        
+        # Nettoyage
+        text = description.lower()
+        text = re.sub(r'[^\w\s]', '', text)
+        words = text.split()
+        
+        # Stop words basiques
+        stop_words = {'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at',
+                     'to', 'for', 'of', 'with', 'by', 'from', 'this', 'that',
+                     'is', 'are', 'was', 'were', 'be', 'been', 'being', 'recipe'}
+        
+        # Filtrer et compter
+        filtered_words = [w for w in words if w not in stop_words and len(w) > 3]
+        word_counts = Counter(filtered_words)
+        
+        # Retourner les plus fréquents
+        return [word for word, _ in word_counts.most_common(top_n)]
+
+
+class RecipePreprocessor:
+    """Orchestrateur principal du prétraitement."""
+    
+    def __init__(self):
+    
+        self.ingredients_prep = IngredientPreprocessor(
+            ingr_map_path='ingr_map.csv'  
+        )
+        self.nutrition_prep = NutritionPreprocessor()
+        self.tags_prep = TagsPreprocessor()
+        self.steps_prep = StepsPreprocessor()
+        self.description_prep = DescriptionPreprocessor()
+        
+        logger.info("RecipePreprocessor initialisé avec succès")
+    
+    def preprocess_recipe(self, row: pd.Series) -> RecipeFeatures:
+        
+        # Ingrédients
+        ingredients_list = self.ingredients_prep.parse_and_clean(row['ingredients'])
+        ingredients_set = set(ingredients_list)
+        ingredient_categories = self.ingredients_prep.categorize(ingredients_list)
+        
+        # Nutrition
+        nutrition_dict = self.nutrition_prep.parse_nutrition(row['nutrition'])
+        
+        # Tags
+        tags = self.tags_prep.parse_tags(row['tags'])
+        meal_type = self.tags_prep.extract_meal_type(tags)
+        dietary = self.tags_prep.extract_dietary_restriction(tags)
+        cuisine = self.tags_prep.extract_cuisine_type(tags)
+        
+        # Steps
+        steps = self.steps_prep.parse_steps(row['steps'])
+        n_steps = row['n_steps']
+        effort_score = self.steps_prep.compute_effort_score(n_steps, steps)
+        techniques = self.steps_prep.extract_techniques(steps)
+        
+        # Description
+        keywords = self.description_prep.extract_keywords(row.get('description', ''))
+        
+        return RecipeFeatures(
+            recipe_id=row['id'],
+            ingredients=ingredients_set,
+            ingredient_categories=ingredient_categories,
+            nutrition_dict=nutrition_dict,
+            tags=tags,
+            meal_type=meal_type,
+            dietary_restrictions=dietary,
+            cuisine_type=cuisine,
+            n_steps=n_steps,
+            effort_score=effort_score,
+            cooking_techniques=techniques,
+            description_keywords=keywords
+        )
+    
+    def preprocess_dataframe(self, df: pd.DataFrame) -> pd.DataFrame:
+        logger.info(f"Début du prétraitement de {len(df)} recettes")
+        features_list = []
+        for idx, row in df.iterrows():
+            try:
+                features = self.preprocess_recipe(row)
+                features_list.append(features)
+                
+                if (idx + 1) % 1000 == 0:
+                    logger.info(f"Prétraitement: {idx + 1}/{len(df)} recettes")
+                    
+            except Exception as e:
+                logger.error(f"Erreur prétraitement recette {row['id']}: {e}")
+                continue
+        
+        # Conversion en DataFrame
+        processed_df = pd.DataFrame([vars(f) for f in features_list])
+        
+        logger.info(f"Prétraitement terminé: {len(processed_df)} recettes traitées")
+        
+        return processed_df
+
+# Exemple d'utilisation
+if __name__ == "__main__":
+    # Charger le dataset
+    # df = pd.read_csv('RAW_recipes.csv')
+    
+    # Initialiser le preprocessor
+    preprocessor = RecipePreprocessor()
+    
+    # Prétraiter
+    # processed_df = preprocessor.preprocess_dataframe(df)
+    
+    # Sauvegarder
+    # processed_df.to_csv('data/processed/recipes_features.csv', index=False)
+    
+    print("Module de prétraitement prêt à l'emploi!")
