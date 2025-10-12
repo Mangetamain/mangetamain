@@ -1,0 +1,25 @@
+{
+  "processing_date": "2025-10-11T20:02:10",
+  "total_recipes_input": 231637,
+  "total_recipes_processed": 231629,
+  "recipes_with_ingredients": 231629,
+  "total_interactions": 1132367,
+  "processing_time_minutes": 2.63,
+  "cores_used": 7,
+  "chunks_processed": 22,
+  "success_rate": 100.0,
+  "ready_for_streamlit": true,
+  "dataset_info": {
+    "name": "Food.com Recipes and User Interactions",
+    "source": "Kaggle",
+    "processing_method": "parallel_multiprocessing",
+    "features": [
+      "normalized_ingredients",
+      "ingredient_categories", 
+      "nutrition_dict",
+      "meal_type",
+      "cuisine_type",
+      "effort_score"
+    ]
+  }
+}

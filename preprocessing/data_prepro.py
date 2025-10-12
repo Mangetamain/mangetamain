@@ -17,6 +17,7 @@ class RecipeFeatures:
     recipe_id: int
     ingredients: Set[str]
     ingredient_categories: Dict[str, List[str]]
+    normalized_ingredients_list: List[str]
     nutrition_dict: Dict[str, float]
     tags: Set[str]
     meal_type: Optional[str]
@@ -281,10 +282,22 @@ class DescriptionPreprocessor:
 class RecipePreprocessor:
     """Orchestrateur principal du prétraitement."""
     
-    def __init__(self):
-    
+    def __init__(self, ingr_map_path=None):
+        # ✅ CORRECTION: Gérer les chemins de façon robuste
+        if ingr_map_path is None:
+            # Chemin par défaut relatif au fichier actuel
+            import os
+            current_dir = os.path.dirname(__file__)
+            ingr_map_path = os.path.join(current_dir, 'ingr_map.csv')
+        
+        # Vérifier que le fichier existe
+        if not os.path.exists(ingr_map_path):
+            logger.warning(f"⚠️ Fichier de mapping introuvable: {ingr_map_path}")
+            logger.info("Utilisation sans mapping des ingrédients")
+            ingr_map_path = None
+        
         self.ingredients_prep = IngredientPreprocessor(
-            ingr_map_path='ingr_map.csv'  
+            ingr_map_path=ingr_map_path
         )
         self.nutrition_prep = NutritionPreprocessor()
         self.tags_prep = TagsPreprocessor()
@@ -322,6 +335,7 @@ class RecipePreprocessor:
             recipe_id=row['id'],
             ingredients=ingredients_set,
             ingredient_categories=ingredient_categories,
+            normalized_ingredients_list=ingredients_list,
             nutrition_dict=nutrition_dict,
             tags=tags,
             meal_type=meal_type,
