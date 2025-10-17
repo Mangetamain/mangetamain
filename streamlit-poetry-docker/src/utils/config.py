@@ -17,7 +17,7 @@ CACHE_CONFIG = {
 # Configuration du moteur de recommandations
 RECOMMENDATION_CONFIG = {
     "alpha": 0.5,
-    "beta": 0.3, 
+    "beta": 0.3,
     "gamma": 0.2,
     "max_ingredients_display": 8
 }
