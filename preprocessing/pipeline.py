@@ -12,6 +12,10 @@ from datetime import datetime
 import logging
 from multiprocessing import Pool, cpu_count
 
+# Imports locaux
+from data_load import fetch_data, load_data
+from data_prepro import RecipePreprocessor
+
 # Configuration logging
 logging.basicConfig(
     level=logging.INFO,
@@ -22,10 +26,6 @@ logging.basicConfig(
     ]
 )
 logger = logging.getLogger(__name__)
-
-# Imports locaux
-from data_load import fetch_data, load_data
-from data_prepro import RecipePreprocessor
 
 
 def process_chunk(chunk_data):
@@ -259,8 +259,10 @@ if __name__ == "__main__":
         else:
             logger.error("❌ Problème de validation des données")
             sys.exit(1)
+
     except Exception as e:
         logger.error(f"❌ ÉCHEC du pipeline: {e}")
         import traceback
         traceback.print_exc()
         sys.exit(1)
+

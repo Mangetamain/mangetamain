@@ -7,7 +7,7 @@ import streamlit as st
 
 class StyleManager:
     """Gestionnaire des styles CSS pour l'application"""
-    
+
     @staticmethod
     def apply_styles():
         """Applique les styles CSS à l'application"""
