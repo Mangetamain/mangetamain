@@ -77,14 +77,8 @@ class MangeTaMainApp:
                 format_func=lambda x: "Illimité" if x is None else f"{x} min"
             )
         
-        # Paramètres additionnels
-        col_recs, col_sort, col_button = st.columns([1, 1, 2])
-        
-        with col_recs:
-            n_recommendations = st.slider(
-                "🏆 Nombre de recommandations:", 
-                min_value=1, max_value=20, value=8
-            )
+        # Paramètres additionnels - Mode de tri avec plus d'espace
+        col_sort, col_button = st.columns([2, 1])
         
         with col_sort:
             sort_mode = st.selectbox(
@@ -106,6 +100,13 @@ class MangeTaMainApp:
                 type="primary",
                 use_container_width=True
             )
+        
+        # Slider pour le nombre de recommandations
+        n_recommendations = st.slider(
+            "🏆 Nombre de recommandations:", 
+            min_value=1, max_value=20, value=8,
+            key="n_recs_slider"
+        )
         
         return user_input, time_limit, n_recommendations, recommend_button, sort_mode
     
