@@ -19,7 +19,13 @@ RECOMMENDATION_CONFIG = {
     "alpha": 0.5,
     "beta": 0.3, 
     "gamma": 0.2,
-    "max_ingredients_display": 8
+    "max_ingredients_display": 8,
+    # Nouveaux paramètres pour le score composite
+    "jaccard_weight": 0.6,      # 60% d'importance pour l'indice Jaccard
+    "global_weight": 0.4,       # 40% d'importance pour le score global
+    "high_jaccard_threshold": 0.3,  # Seuil pour bonus Jaccard élevé
+    "high_jaccard_bonus": 0.1,      # Bonus pour Jaccard > seuil
+    "prioritize_jaccard": True       # Active le tri composite par défaut
 }
 
 # Configuration de l'interface

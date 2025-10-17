@@ -24,17 +24,29 @@ class MangeTaMainApp:
         """Parse les ingrédients saisis par l'utilisateur"""
         return [ing.strip().lower() for ing in user_input.split(",") if ing.strip()]
     
-    def _display_recommendations_stats(self, recommendations, user_ingredients):
-        """Affiche les statistiques des recommandations"""
+    def _display_recommendations_stats(self, recommendations, user_ingredients, sort_mode="score"):
+        """Affiche les statistiques des recommandations avec info sur le tri"""
         if not recommendations.empty:
             # Statistiques rapides
             avg_jaccard = recommendations['jaccard'].mean()
             max_jaccard = recommendations['jaccard'].max()
             matches_count = (recommendations['jaccard'] > 0).sum()
             
+            # Info sur le score utilisé pour le tri
+            sort_info = ""
+            if sort_mode == "intelligent" and 'composite_score' in recommendations.columns:
+                avg_composite = recommendations['composite_score'].mean()
+                sort_info = f" | Score composite moyen: {avg_composite:.3f}"
+            elif sort_mode == "jaccard":
+                sort_info = f" | Tri par Jaccard (max: {max_jaccard:.3f})"
+            elif sort_mode == "score":
+                avg_score = recommendations['score'].mean()
+                sort_info = f" | Tri par score global (moyen: {avg_score:.3f})"
+            
             st.success(f"🎉 **{len(recommendations)} recommandations générées** | "
-                      f"Correspondances moyennes: {avg_jaccard:.2f} | "
-                      f"Recettes avec matches: {matches_count}/{len(recommendations)}")
+                      f"Jaccard moyen: {avg_jaccard:.3f} | "
+                      f"Recettes avec correspondances: {matches_count}/{len(recommendations)}"
+                      f"{sort_info}")
             
             # Afficher les recommandations
             for i, (_, recipe) in enumerate(recommendations.iterrows(), 1):
@@ -66,12 +78,25 @@ class MangeTaMainApp:
             )
         
         # Paramètres additionnels
-        col_recs, col_button = st.columns([1, 2])
+        col_recs, col_sort, col_button = st.columns([1, 1, 2])
         
         with col_recs:
             n_recommendations = st.slider(
                 "🏆 Nombre de recommandations:", 
                 min_value=1, max_value=20, value=8
+            )
+        
+        with col_sort:
+            sort_mode = st.selectbox(
+                "📊 Mode de tri:",
+                options=["intelligent", "jaccard", "score"],
+                format_func=lambda x: {
+                    "intelligent": "🎯 Intelligent (60% Jaccard + 40% Score)",
+                    "jaccard": "🥄 Priorité Jaccard (similarité ingrédients)",
+                    "score": "⭐ Score global uniquement"
+                }[x],
+                index=0,
+                help="Choisissez comment prioriser les recommandations"
             )
         
         with col_button:
@@ -82,28 +107,59 @@ class MangeTaMainApp:
                 use_container_width=True
             )
         
-        return user_input, time_limit, n_recommendations, recommend_button
+        return user_input, time_limit, n_recommendations, recommend_button, sort_mode
     
     def _handle_recommendations(self, recipes_df, interactions_df, user_input, 
-                              time_limit, n_recommendations, recommend_button):
-        """Gère la logique des recommandations"""
+                              time_limit, n_recommendations, recommend_button, sort_mode):
+        """Gère la logique des recommandations avec le mode de tri"""
         if recommend_button and user_input.strip():
             
             # Parser les ingrédients
             user_ingredients = self._parse_user_ingredients(user_input)
             
             st.markdown("---")
+            
+            # Afficher info sur le mode de tri
+            sort_info = {
+                "intelligent": "🎯 Tri intelligent (60% Jaccard + 40% Score global)",
+                "jaccard": "🥄 Priorise la similarité des ingrédients (Jaccard)",
+                "score": "⭐ Tri par score global uniquement"
+            }
+            st.info(f"**Mode de tri :** {sort_info[sort_mode]}")
+            
             st.subheader(f"🎯 Recommandations pour: {', '.join(user_ingredients[:5])}" + 
                         (f" + {len(user_ingredients)-5} autres..." if len(user_ingredients) > 5 else ""))
+            
+            # Déterminer les paramètres de tri
+            if sort_mode == "intelligent":
+                prioritize_jaccard = True
+                custom_sort = False
+            elif sort_mode == "jaccard":
+                prioritize_jaccard = False  # On fera le tri nous-mêmes
+                custom_sort = "jaccard"
+            else:  # score
+                prioritize_jaccard = False
+                custom_sort = "score"
             
             # Obtenir les recommandations
             with st.spinner("🔄 Génération des recommandations personnalisées..."):
                 recommendations = self.recommendation_engine.get_recommendations(
-                    recipes_df, interactions_df, user_ingredients, time_limit, n_recommendations
+                    recipes_df, interactions_df, user_ingredients, time_limit, 
+                    n_recommendations, prioritize_jaccard
                 )
+                
+                # Appliquer tri personnalisé si nécessaire
+                if custom_sort and not recommendations.empty:
+                    if custom_sort == "jaccard":
+                        recommendations = recommendations.sort_values('jaccard', ascending=False)
+                    elif custom_sort == "score":
+                        recommendations = recommendations.sort_values('score', ascending=False)
+                    
+                    # Garder seulement le nombre demandé
+                    recommendations = recommendations.head(n_recommendations)
             
             # Afficher les résultats
-            self._display_recommendations_stats(recommendations, user_ingredients)
+            self._display_recommendations_stats(recommendations, user_ingredients, sort_mode)
             
         elif recommend_button and not user_input.strip():
             st.warning("⚠️ Veuillez entrer au moins un ingrédient")
@@ -129,12 +185,12 @@ class MangeTaMainApp:
         self.ui_components.display_sidebar_stats(recipes_df, interactions_df)
         
         # === INTERFACE PRINCIPALE ===
-        user_input, time_limit, n_recommendations, recommend_button = self._handle_user_input_section()
+        user_input, time_limit, n_recommendations, recommend_button, sort_mode = self._handle_user_input_section()
         
         # === RECOMMANDATIONS ===
         self._handle_recommendations(
             recipes_df, interactions_df, user_input, 
-            time_limit, n_recommendations, recommend_button
+            time_limit, n_recommendations, recommend_button, sort_mode
         )
         
         # === FOOTER ===
