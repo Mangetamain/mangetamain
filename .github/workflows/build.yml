@@ -35,7 +35,7 @@ jobs:
       - name: Run flake8
         working-directory: ./preprocessing
         run: |
-          poetry run flake8 src/ --count --max-line-length=120 --statistics
+          poetry run flake8 ./ --count --max-line-length=120 --statistics
 
       - name: Run pylint
         working-directory: ./preprocessing
