@@ -1,0 +1,202 @@
+name: CI/CD Pipeline - MangeTaMain
+
+on:
+  push:
+    branches: [ feature/ci-cd ]
+
+
+jobs:
+  # ============================================
+  # JOB 1: LINT - Preprocessing
+  # ============================================
+  lint-preprocessing:
+    name: 🔍 Lint Preprocessing
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Install dependencies
+        working-directory: ./preprocessing
+        run: |
+          poetry install --no-root
+
+      - name: Run flake8
+        working-directory: ./preprocessing
+        run: |
+          poetry run flake8 src/ --count --max-line-length=120 --statistics
+
+      - name: Run pylint
+        working-directory: ./preprocessing
+        run: |
+          poetry run pylint src/ --fail-under=7.0 || true
+
+  # ============================================
+  # JOB 2: LINT - Streamlit
+  # ============================================
+  lint-streamlit:
+    name: 🔍 Lint Streamlit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Install dependencies
+        working-directory: ./streamlit-poetry-docker
+        run: |
+          poetry install --no-root
+
+      - name: Run flake8
+        working-directory: ./streamlit-poetry-docker
+        run: |
+          poetry run flake8 src/ app.py --count --max-line-length=120 --statistics
+
+      - name: Run pylint
+        working-directory: ./streamlit-poetry-docker
+        run: |
+          poetry run pylint src/ app.py --fail-under=7.0 || true
+
+  # ============================================
+  # JOB 3: TEST - Preprocessing
+  # ============================================
+  test-preprocessing:
+    name: 🧪 Test Preprocessing
+    runs-on: ubuntu-latest
+    needs: [lint-preprocessing]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Install dependencies
+        working-directory: ./preprocessing
+        run: |
+          poetry install --no-root
+
+      - name: Run pytest with coverage
+        working-directory: ./preprocessing
+        run: |
+          poetry run pytest tests/ --cov=src --cov-report=xml --cov-report=html --cov-report=term
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./preprocessing/coverage.xml
+          flags: preprocessing
+          name: preprocessing-coverage
+
+  # ============================================
+  # JOB 4: TEST - Streamlit
+  # ============================================
+  test-streamlit:
+    name: 🧪 Test Streamlit
+    runs-on: ubuntu-latest
+    needs: [lint-streamlit]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Install dependencies
+        working-directory: ./streamlit-poetry-docker
+        run: |
+          poetry install --no-root
+
+      - name: Run pytest with coverage
+        working-directory: ./streamlit-poetry-docker
+        run: |
+          poetry run pytest tests/ --cov=src --cov-report=xml --cov-report=html --cov-report=term
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./streamlit-poetry-docker/coverage.xml
+          flags: streamlit
+          name: streamlit-coverage
+
+  # ============================================
+  # JOB 5: BUILD Poetry Packages
+  # ============================================
+  build-poetry:
+    name: 📦 Build Poetry Packages
+    runs-on: ubuntu-latest
+    needs: [test-preprocessing, test-streamlit]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Build preprocessing package
+        working-directory: ./preprocessing
+        run: |
+          poetry build
+          ls -lh dist/
+
+      - name: Build streamlit package
+        working-directory: ./streamlit-poetry-docker
+        run: |
+          poetry build
+          ls -lh dist/
+
+      - name: Upload preprocessing artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: preprocessing-dist
+          path: preprocessing/dist/*
+
+      - name: Upload streamlit artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: streamlit-dist
+          path: streamlit-poetry-docker/dist/*
