@@ -113,4 +113,3 @@ class UIComponents:
             Développé avec ❤️ en utilisant Streamlit et des données Food.com
         </div>
         """, unsafe_allow_html=True)
-
