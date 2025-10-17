@@ -9,6 +9,17 @@ package-mode = false
 [tool.poetry.dependencies]
 python = "^3.11"
 streamlit = "^1.38"
+#  CRITIQUE: Ajouter kagglehub pour résoudre l'erreur d'importation manquante dans Streamlit Cloud
+kagglehub = "^0.2.5"
+#  Dépendances nécessaires pour les modules preprocessing
+pandas = "^2.0.0"
+numpy = "^1.24.0"
+scikit-learn = "^1.3.0"
+PyYAML = "^6.0"
+# Dépendances pour la visualisation
+plotly = "^5.17.0"
+matplotlib = "^3.7.0"
+seaborn = "^0.12.0"
 
 [build-system]
 requires = ["poetry-core"]

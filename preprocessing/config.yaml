@@ -1,5 +1,77 @@
-dataset: 
-  name: shuyangli94/food-com-recipes-and-user-interactions
-  files:
-    - RAW_interactions.csv
-    - RAW_recipes.csv
+# Configuration pour le projet MangeTaMain
+
+# Kaggle Datasets
+datasets:
+  recipes:
+    dataset_id: "shuyangli94/food-com-recipes-and-user-interactions"
+    file_name: "RAW_recipes.csv"
+  interactions:
+    dataset_id: "shuyangli94/food-com-recipes-and-user-interactions" 
+    file_name: "RAW_interactions.csv"
+
+# Preprocessing
+preprocessing:
+  # Mode complet pour production
+  process_full_dataset: true
+  
+  # Configuration parallèle optimisée
+  chunk_size: 3000           # Chunks optimaux pour le traitement
+  max_cores: 8               # Limite de cores utilisés
+  
+  # Filtres de qualité
+  min_ingredients: 2         # Minimum d'ingrédients par recette
+  max_ingredients: 100       # Maximum d'ingrédients par recette
+  filter_invalid_recipes: true  # Supprimer les recettes invalides
+  max_minutes: 120   # Temps max de préparation (minutes)
+  
+  # Pipeline settings mis à jour
+  enable_parallel: true  # Traitement parallèle activé
+  
+  # Mapping des ingrédients
+  ingredient_mapping:
+    file_path: "ingr_map.csv"
+    columns:
+      raw: "raw_ingr"
+      normalized: "ingredient"
+  
+  # Colonnes à conserver
+  keep_columns:
+    recipes:
+      - "id"
+      - "name"
+      - "minutes"
+      - "ingredients"
+      - "normalized_ingredients"
+      - "nutrition"
+      - "n_steps"
+      - "steps"
+      - "description"
+      - "tags"
+    interactions:
+      - "user_id"
+      - "recipe_id"
+      - "rating"
+      - "date"
+
+# Scoring
+scoring:
+  # Poids pour le score final
+  weights:
+    jaccard: 0.5    # Similarité des ingrédients
+    rating: 0.3     # Rating moyen
+    popularity: 0.2 # Nombre de reviews
+  
+  # Paramètres de recommandation
+  default_top_n: 10
+  max_time_limit: 180  # minutes
+
+# Streamlit App
+app:
+  title: "MangeTaMain - Recommandation de Recettes"
+  max_ingredients: 20
+  default_time_limit: 60
+
+# Logging
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
