@@ -1,0 +1,42 @@
+services:
+  # Service de preprocessing automatique
+  preprocessing:
+    build: ./preprocessing
+    volumes:
+      - ./preprocessing:/app
+      - ./data:/app/data
+      - shared_data:/shared_data  # Volume partagé pour les données preprocessées
+    environment:
+      - POETRY_CACHE_DIR=/tmp/poetry_cache
+      - PYTHONPATH=/app
+    working_dir: /app
+    command: bash -c "poetry install && poetry run python pipeline.py"  # Exécution automatique du pipeline complet
+    networks:
+      - app-network
+
+  # Service Streamlit production
+  streamlit-app:
+    build: ./streamlit-poetry-docker
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./streamlit-poetry-docker:/app
+      - ./preprocessing:/preprocessing
+      - ./data:/app/data
+      - shared_data:/shared_data  # Accès aux données preprocessées
+    environment:
+      - POETRY_CACHE_DIR=/tmp/poetry_cache
+      - PYTHONPATH=/app:/preprocessing
+    working_dir: /app
+    command: poetry run streamlit run app.py --server.address=0.0.0.0 --server.port=8501
+    depends_on:
+      - preprocessing  # Attendre que le preprocessing soit terminé
+    networks:
+      - app-network
+
+volumes:
+  shared_data:  # Volume partagé entre preprocessing et streamlit
+
+networks:
+  app-network:
+    driver: bridge
