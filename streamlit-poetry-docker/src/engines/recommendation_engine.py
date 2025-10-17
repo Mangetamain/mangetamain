@@ -12,42 +12,45 @@ class RecommendationEngine:
     """Moteur de recommandations"""
     
     @staticmethod
-    def _calculate_composite_score(recommendations: pd.DataFrame, 
-                                  jaccard_weight: float = 0.6, 
-                                  global_weight: float = 0.4) -> pd.DataFrame:
-        """
-        Calcule un score composite prenant en compte à la fois le score global et l'indice Jaccard
-        
-        Args:
-            recommendations: DataFrame des recommandations
-            jaccard_weight: Poids de l'indice Jaccard (0.6 = 60% d'importance)
-            global_weight: Poids du score global (0.4 = 40% d'importance)
-        """
+    def _calculate_composite_score(recommendations: pd.DataFrame) -> pd.DataFrame:
+        """Calculate composite score combining similarity score and Jaccard index."""
         if recommendations.empty:
             return recommendations
-        
-        # Normaliser les scores entre 0 et 1
-        if 'jaccard' in recommendations.columns and recommendations['jaccard'].max() > 0:
-            jaccard_normalized = recommendations['jaccard'] / recommendations['jaccard'].max()
-        else:
-            jaccard_normalized = 0
             
-        if 'score' in recommendations.columns and recommendations['score'].max() > 0:
-            global_normalized = recommendations['score'] / recommendations['score'].max()
-        else:
-            global_normalized = 0
+        # Calculate normalized score (0-1)
+        recommendations = recommendations.copy()
         
-        # Calculer le score composite
+        # Handle missing score column
+        if 'score' not in recommendations.columns:
+            # If no score column, use jaccard if available, otherwise set to 0.5
+            if 'jaccard' in recommendations.columns:
+                recommendations['score'] = recommendations['jaccard']
+            else:
+                recommendations['score'] = 0.5
+        
+        score_min = recommendations['score'].min()
+        score_max = recommendations['score'].max()
+        score_range = score_max - score_min
+        
+        if score_range > 0:
+            recommendations['normalized_score'] = (recommendations['score'] - score_min) / score_range
+        else:
+            recommendations['normalized_score'] = 1.0
+        
+        # Calculate Jaccard bonus if jaccard column exists
+        jaccard_bonus = 0.0
+        if 'jaccard' in recommendations.columns:
+            high_jaccard_bonus = (recommendations['jaccard'] > 0.3).astype(float) * 0.1
+            jaccard_weight = recommendations['jaccard'] * 0.2
+            jaccard_bonus = high_jaccard_bonus + jaccard_weight
+        
+        # Composite score: 0.7 * normalized similarity + 0.3 * jaccard component
         recommendations['composite_score'] = (
-            jaccard_weight * jaccard_normalized + 
-            global_weight * global_normalized
+            0.7 * recommendations['normalized_score'] + 
+            0.3 * jaccard_bonus
         )
         
-        # Ajouter un bonus pour les recettes avec un Jaccard élevé (>0.3)
-        high_jaccard_bonus = (recommendations['jaccard'] > 0.3).astype(float) * 0.1
-        recommendations['composite_score'] += high_jaccard_bonus
-        
-        return recommendations.sort_values('composite_score', ascending=False)
+        return recommendations
     
     @staticmethod
     @st.cache_data(ttl=1800, show_spinner=False)
