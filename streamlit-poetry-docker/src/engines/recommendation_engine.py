@@ -53,7 +53,6 @@ class RecommendationEngine:
         return recommendations
     
     @staticmethod
-    @st.cache_data(ttl=1800, show_spinner=False)
     def get_recommendations(recipes_df: pd.DataFrame, 
                           interactions_df: pd.DataFrame, 
                           user_ingredients: List[str], 
@@ -85,13 +84,11 @@ class RecommendationEngine:
             if not recommendations.empty and prioritize_jaccard:
                 # Appliquer le tri composite intelligent
                 recommendations = RecommendationEngine._calculate_composite_score(
-                    recommendations, 
-                    jaccard_weight=0.6,  # 60% pour Jaccard
-                    global_weight=0.4    # 40% pour score global
+                    recommendations
                 )
                 
-                # Retourner le nombre demandé
-                recommendations = recommendations.head(n_recommendations)
+                # Trier par score composite et retourner le nombre demandé
+                recommendations = recommendations.sort_values('composite_score', ascending=False).head(n_recommendations)
             
             return recommendations
             
