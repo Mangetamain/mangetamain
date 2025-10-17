@@ -9,7 +9,7 @@ try:
 except ImportError:
     SKLEARN_AVAILABLE = False
 
-class RecipScorer:
+class RecipeScorer:
     """Classe pour scorer et recommander des recettes"""
     
     def __init__(self, alpha=0.5, beta=0.3, gamma=0.2):
@@ -146,16 +146,16 @@ class RecipScorer:
         return result[existing_columns]
 
 # Alias pour compatibilité
-RecipeScorer = RecipScorer
+RecipScorer = RecipeScorer
 
 # Test direct du module
 if __name__ == "__main__":
     print(" Test direct du module reco_score")
-    scorer = RecipScorer()
+    scorer = RecipeScorer()
     
     # Test Jaccard
     user_ing = ["chicken", "onion"]
     recipe_ing = ["chicken", "tomato", "onion"]
-    jaccard = RecipScorer.jaccard_similarity(user_ing, recipe_ing)
+    jaccard = RecipeScorer.jaccard_similarity(user_ing, recipe_ing)
     print(f"Test Jaccard: {jaccard:.3f}")
     print(" Module reco_score prêt!")

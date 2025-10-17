@@ -85,11 +85,11 @@ def get_recommendations(recipes_df, interactions_df, user_ingredients, time_limi
     try:
         # Import du système de scoring
         sys.path.append('/preprocessing')
-        from reco_score import RecipScorer
+        from reco_score import RecipeScorer
         
         # Créer le scorer et obtenir les recommandations
-        scorer = RecipScorer(alpha=0.5, beta=0.3, gamma=0.2)
-        
+        scorer = RecipeScorer(alpha=0.5, beta=0.3, gamma=0.2)
+
         recommendations = scorer.recommend(
             recipes_df=recipes_df,
             interactions_df=interactions_df,
