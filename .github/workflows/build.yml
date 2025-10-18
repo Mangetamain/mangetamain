@@ -7,10 +7,10 @@ on:
 
 jobs:
   # ============================================
-  # JOB 1: LINT - Preprocessing
+  # JOB 0: PREPARE - Setup Python & Poetry
   # ============================================
-  lint-preprocessing:
-    name: 🔍 Lint Preprocessing
+  prepare:
+    name: 🔧 Prepare Environment
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -22,10 +22,57 @@ jobs:
           python-version: '3.11'
           cache: 'pip'
 
+      - name: Cache Poetry installation
+        id: cache-poetry
+        uses: actions/cache@v3
+        with:
+          path: ~/.local
+          key: poetry-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+
       - name: Install Poetry
+        if: steps.cache-poetry.outputs.cache-hit != 'true'
         run: |
           curl -sSL https://install.python-poetry.org | python3 -
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Add Poetry to PATH
+        run: echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Verify Poetry installation
+        run: poetry --version
+
+  # ============================================
+  # JOB 1: LINT - Preprocessing
+  # ============================================
+  lint-preprocessing:
+    name: 🔍 Lint Preprocessing
+    runs-on: ubuntu-latest
+    needs: [prepare]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Restore Poetry from cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.local
+          key: poetry-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+
+      - name: Add Poetry to PATH
+        run: echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pypoetry
+          key: poetry-deps-preprocessing-${{ hashFiles('preprocessing/poetry.lock') }}
+          restore-keys: |
+            poetry-deps-preprocessing-
 
       - name: Update lock file if needed
         working-directory: ./preprocessing
@@ -33,8 +80,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: ./preprocessing
-        run: |
-          poetry install --no-root
+        run: poetry install --no-root
 
       - name: Run flake8
         working-directory: ./preprocessing
@@ -52,6 +98,7 @@ jobs:
   lint-streamlit:
     name: 🔍 Lint Streamlit
     runs-on: ubuntu-latest
+    needs: [prepare]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -62,10 +109,21 @@ jobs:
           python-version: '3.11'
           cache: 'pip'
 
-      - name: Install Poetry
-        run: |
-          curl -sSL https://install.python-poetry.org | python3 -
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
+      - name: Restore Poetry from cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.local
+          key: poetry-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+
+      - name: Add Poetry to PATH
+        run: echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pypoetry
+          key: poetry-deps-streamlit-${{ hashFiles('streamlit-poetry-docker/poetry.lock') }}
+          restore-keys: poetry-deps-streamlit-
 
       - name: Update lock file if needed
         working-directory: ./streamlit-poetry-docker
@@ -73,8 +131,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: ./streamlit-poetry-docker
-        run: |
-          poetry install --no-root
+        run: poetry install --no-root
 
       - name: Run flake8
         working-directory: ./streamlit-poetry-docker
@@ -103,10 +160,20 @@ jobs:
           python-version: '3.11'
           cache: 'pip'
 
-      - name: Install Poetry
-        run: |
-          curl -sSL https://install.python-poetry.org | python3 -
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
+      - name: Restore Poetry from cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.local
+          key: poetry-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+
+      - name: Add Poetry to PATH
+        run: echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pypoetry
+          key: poetry-deps-preprocessing-${{ hashFiles('preprocessing/poetry.lock') }}
 
       - name: Update lock file if needed
         working-directory: ./preprocessing
@@ -114,8 +181,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: ./preprocessing
-        run: |
-          poetry install --no-root
+        run: poetry install --no-root
 
       - name: Run pytest with coverage
         working-directory: ./preprocessing
@@ -147,10 +213,20 @@ jobs:
           python-version: '3.11'
           cache: 'pip'
 
-      - name: Install Poetry
-        run: |
-          curl -sSL https://install.python-poetry.org | python3 -
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
+      - name: Restore Poetry from cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.local
+          key: poetry-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+
+      - name: Add Poetry to PATH
+        run: echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pypoetry
+          key: poetry-deps-streamlit-${{ hashFiles('streamlit-poetry-docker/poetry.lock') }}
 
       - name: Update lock file if needed
         working-directory: ./streamlit-poetry-docker
@@ -158,8 +234,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: ./streamlit-poetry-docker
-        run: |
-          poetry install --no-root
+        run: poetry install --no-root
 
       - name: Run pytest with coverage
         working-directory: ./streamlit-poetry-docker
@@ -190,10 +265,20 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install Poetry
-        run: |
-          curl -sSL https://install.python-poetry.org | python3 -
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
+      - name: Restore Poetry from cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.local
+          key: poetry-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+
+      - name: Add Poetry to PATH
+        run: echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Cache preprocessing dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pypoetry
+          key: poetry-deps-preprocessing-${{ hashFiles('preprocessing/poetry.lock') }}
 
       - name: Update lock file - preprocessing
         working-directory: ./preprocessing
@@ -204,6 +289,12 @@ jobs:
         run: |
           poetry build
           ls -lh dist/
+
+      - name: Cache streamlit dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pypoetry
+          key: poetry-deps-streamlit-${{ hashFiles('streamlit-poetry-docker/poetry.lock') }}
 
       - name: Update lock file - streamlit
         working-directory: ./streamlit-poetry-docker
