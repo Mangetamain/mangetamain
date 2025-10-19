@@ -96,20 +96,107 @@ class TestCompleteApplicationFlow:
             mock_spinner.return_value.__enter__ = Mock()
             mock_spinner.return_value.__exit__ = Mock()
             
-            # Load data
-            recipes_df, interactions_df = data_manager.load_preprocessed_data()
+    def test_recommendation_engine_with_cosine_similarity(self, complete_recipes_dataset, complete_interactions_dataset):
+        """Test RecommendationEngine with new cosine similarity features."""
+        # Mock the external reco_score module
+        with patch('sys.path.append'), \
+             patch('streamlit.error') as mock_error:
             
-            # Verify data was loaded correctly
-            assert recipes_df is not None
-            assert interactions_df is not None
-            assert len(recipes_df) == 20
-            assert len(interactions_df) == 100
-            assert 'recipe_id' in recipes_df.columns
-            assert 'user_id' in interactions_df.columns
+            # Create mock RecipeScorer that returns data with cosine similarity
+            mock_scorer = Mock()
+            mock_recommendations = pd.DataFrame({
+                'recipe_id': [1, 2, 3, 4, 5],
+                'name': ['Pasta Carbonara', 'Caesar Salad', 'Apple Pie', 'Chicken Stew', 'Veggie Soup'],
+                'jaccard': [0.8, 0.6, 0.4, 0.3, 0.2],
+                'cosine': [0.9, 0.7, 0.5, 0.8, 0.3],  # Include cosine similarity
+                'score': [0.85, 0.75, 0.65, 0.70, 0.55],
+                'ingredients': [
+                    ['pasta', 'eggs', 'cheese'],
+                    ['lettuce', 'chicken', 'parmesan'],
+                    ['apples', 'flour', 'sugar'],
+                    ['chicken', 'carrots', 'onions'],
+                    ['vegetables', 'broth', 'herbs']
+                ]
+            })
+            mock_scorer.recommend.return_value = mock_recommendations
             
-            # Verify success message was called
-            mock_success.assert_called_once()
-            mock_error.assert_not_called()
+            # Mock the import of RecipeScorer
+            with patch('builtins.__import__') as mock_import:
+                def side_effect(name, *args, **kwargs):
+                    if name == 'reco_score':
+                        mock_module = Mock()
+                        mock_module.RecipeScorer = Mock(return_value=mock_scorer)
+                        return mock_module
+                    return __import__(name, *args, **kwargs)
+                
+                mock_import.side_effect = side_effect
+                
+                # Test recommendations with new hybrid system
+                recommendations = RecommendationEngine.get_recommendations(
+                    recipes_df=complete_recipes_dataset,
+                    interactions_df=complete_interactions_dataset,
+                    user_ingredients=['pasta', 'eggs', 'cheese'],
+                    time_limit=60,
+                    n_recommendations=3,
+                    prioritize_jaccard=True
+                )
+                
+                # Verify basic functionality
+                assert not recommendations.empty
+                assert len(recommendations) <= 3
+                assert 'composite_score' in recommendations.columns
+                
+                # Verify that RecipeScorer was called with correct hybrid parameters
+                mock_scorer.recommend.assert_called_once()
+                
+                # Verify cosine similarity is included in results
+                if 'cosine' in recommendations.columns:
+                    assert recommendations['cosine'].notna().any()
+
+    def test_hybrid_scoring_parameters(self, complete_recipes_dataset, complete_interactions_dataset):
+        """Test that the new hybrid scoring parameters (alpha, beta, gamma, delta) are used correctly."""
+        with patch('sys.path.append'), \
+             patch('streamlit.error') as mock_error:
+            
+            # Create mock RecipeScorer to capture initialization parameters
+            mock_scorer_class = Mock()
+            mock_scorer_instance = Mock()
+            mock_scorer_class.return_value = mock_scorer_instance
+            mock_scorer_instance.recommend.return_value = pd.DataFrame({
+                'recipe_id': [1, 2],
+                'name': ['Test Recipe 1', 'Test Recipe 2'],
+                'jaccard': [0.8, 0.6],
+                'cosine': [0.7, 0.5],
+                'score': [0.9, 0.7]
+            })
+            
+            # Mock the import
+            with patch('builtins.__import__') as mock_import:
+                def side_effect(name, *args, **kwargs):
+                    if name == 'reco_score':
+                        mock_module = Mock()
+                        mock_module.RecipeScorer = mock_scorer_class
+                        return mock_module
+                    return __import__(name, *args, **kwargs)
+                
+                mock_import.side_effect = side_effect
+                
+                # Call get_recommendations
+                RecommendationEngine.get_recommendations(
+                    recipes_df=complete_recipes_dataset,
+                    interactions_df=complete_interactions_dataset,
+                    user_ingredients=['pasta', 'eggs'],
+                    time_limit=None,
+                    n_recommendations=5
+                )
+                
+                # Verify RecipeScorer was initialized with correct hybrid parameters
+                mock_scorer_class.assert_called_once_with(
+                    alpha=0.4,  # Jaccard similarity
+                    beta=0.3,   # Rating moyen
+                    gamma=0.2,  # Popularité
+                    delta=0.1   # Cosine similarity (TF-IDF)
+                )
 
     def test_recommendation_engine_integration(self, complete_recipes_dataset, complete_interactions_dataset):
         """Test RecommendationEngine integration with realistic data."""

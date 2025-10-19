@@ -32,6 +32,13 @@ class MangeTaMainApp:
             max_jaccard = recommendations['jaccard'].max()
             matches_count = (recommendations['jaccard'] > 0).sum()
             
+            # Statistiques cosine si disponibles
+            cosine_info = ""
+            if 'cosine' in recommendations.columns:
+                avg_cosine = recommendations['cosine'].mean()
+                max_cosine = recommendations['cosine'].max()
+                cosine_info = f" | Cosine moyen: {avg_cosine:.3f}"
+            
             # Info sur le score utilisé pour le tri
             sort_info = ""
             if sort_mode == "intelligent" and 'composite_score' in recommendations.columns:
@@ -39,12 +46,15 @@ class MangeTaMainApp:
                 sort_info = f" | Score composite moyen: {avg_composite:.3f}"
             elif sort_mode == "jaccard":
                 sort_info = f" | Tri par Jaccard (max: {max_jaccard:.3f})"
+            elif sort_mode == "cosine" and 'cosine' in recommendations.columns:
+                sort_info = f" | Tri par Cosine TF-IDF (max: {max_cosine:.3f})"
             elif sort_mode == "score":
                 avg_score = recommendations['score'].mean()
                 sort_info = f" | Tri par score global (moyen: {avg_score:.3f})"
             
             st.success(f"🎉 **{len(recommendations)} recommandations générées** | "
-                      f"Jaccard moyen: {avg_jaccard:.3f} | "
+                      f"Jaccard moyen: {avg_jaccard:.3f}"
+                      f"{cosine_info} | "
                       f"Recettes avec correspondances: {matches_count}/{len(recommendations)}"
                       f"{sort_info}")
             
@@ -83,10 +93,11 @@ class MangeTaMainApp:
         with col_sort:
             sort_mode = st.selectbox(
                 "📊 Mode de tri:",
-                options=["intelligent", "jaccard", "score"],
+                options=["intelligent", "jaccard", "cosine", "score"],
                 format_func=lambda x: {
-                    "intelligent": "🎯 Intelligent (60% Jaccard + 40% Score)",
-                    "jaccard": "🥄 Priorité Jaccard (similarité ingrédients)",
+                    "intelligent": "🎯 Intelligent (Jaccard + Cosine + Score)",
+                    "jaccard": "🥄 Priorité Jaccard (correspondances exactes)",
+                    "cosine": "🧠 Priorité Cosine (similarité sémantique TF-IDF)",
                     "score": "⭐ Score global uniquement"
                 }[x],
                 index=0,
@@ -108,6 +119,26 @@ class MangeTaMainApp:
             key="n_recs_slider"
         )
         
+        # Section d'aide pour les algorithmes
+        with st.expander("ℹ️ Comprendre les algorithmes de recommandation"):
+            st.markdown("""
+            **🧠 Système hybride Jaccard + Cosine similarity :**
+            
+            **🥄 Jaccard (Correspondances exactes) :**
+            - Mesure l'intersection exacte entre vos ingrédients et ceux de la recette
+            - Formule : `|Ingrédients communs| / |Tous les ingrédients uniques|`
+            - Idéal pour : Utiliser exactement ce que vous avez
+            
+            **🧠 Cosine (Similarité sémantique TF-IDF) :**
+            - Utilise la vectorisation TF-IDF pour capturer les relations sémantiques
+            - Pondère les ingrédients rares (plus discriminants)
+            - Idéal pour : Découvrir des recettes similaires même sans intersection exacte
+            
+            **🎯 Intelligent (Hybride) :**
+            - Combine 40% Jaccard + 10% Cosine + 30% Rating + 20% Popularité
+            - Équilibre optimal entre précision et découverte
+            """)
+        
         return user_input, time_limit, n_recommendations, recommend_button, sort_mode
     
     def _handle_recommendations(self, recipes_df, interactions_df, user_input, 
@@ -122,8 +153,9 @@ class MangeTaMainApp:
             
             # Afficher info sur le mode de tri
             sort_info = {
-                "intelligent": "🎯 Tri intelligent (60% Jaccard + 40% Score global)",
-                "jaccard": "🥄 Priorise la similarité des ingrédients (Jaccard)",
+                "intelligent": "🎯 Tri intelligent hybride (Jaccard + Cosine + Score)",
+                "jaccard": "🥄 Priorise les correspondances exactes (Jaccard)",
+                "cosine": "🧠 Priorise la similarité sémantique (Cosine TF-IDF)",
                 "score": "⭐ Tri par score global uniquement"
             }
             st.info(f"**Mode de tri :** {sort_info[sort_mode]}")
@@ -138,6 +170,9 @@ class MangeTaMainApp:
             elif sort_mode == "jaccard":
                 prioritize_jaccard = False  # On fera le tri nous-mêmes
                 custom_sort = "jaccard"
+            elif sort_mode == "cosine":
+                prioritize_jaccard = False  # On fera le tri nous-mêmes
+                custom_sort = "cosine"
             else:  # score
                 prioritize_jaccard = False
                 custom_sort = "score"
@@ -153,6 +188,8 @@ class MangeTaMainApp:
                 if custom_sort and not recommendations.empty:
                     if custom_sort == "jaccard":
                         recommendations = recommendations.sort_values('jaccard', ascending=False)
+                    elif custom_sort == "cosine":
+                        recommendations = recommendations.sort_values('cosine', ascending=False)
                     elif custom_sort == "score":
                         recommendations = recommendations.sort_values('score', ascending=False)
                     

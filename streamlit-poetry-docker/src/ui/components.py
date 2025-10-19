@@ -22,24 +22,48 @@ class UIComponents:
             </div>
             """, unsafe_allow_html=True)
             
-            # Métriques en colonnes
-            col1, col2, col3, col4 = st.columns(4)
-            
-            with col1:
-                st.metric("🎯 Score Global", f"{recipe['score']:.3f}")
-            
-            with col2:
-                st.metric("🥄 Jaccard", f"{recipe['jaccard']:.3f}")
-            
-            with col3:
-                if pd.notnull(recipe.get('minutes')):
-                    st.metric("⏱️ Temps", f"{recipe['minutes']} min")
-                else:
-                    st.metric("⏱️ Temps", "N/A")
-            
-            with col4:
-                if pd.notnull(recipe.get('mean_rating_norm')):
-                    st.metric("⭐ Rating", f"{recipe['mean_rating_norm']:.2f}")
+            # Métriques en colonnes - incluant Cosine si disponible
+            if 'cosine' in recipe and pd.notnull(recipe['cosine']):
+                col1, col2, col3, col4, col5 = st.columns(5)
+                
+                with col1:
+                    st.metric("🎯 Score Global", f"{recipe['score']:.3f}")
+                
+                with col2:
+                    st.metric("🥄 Jaccard", f"{recipe['jaccard']:.3f}")
+                
+                with col3:
+                    st.metric("🧠 Cosine", f"{recipe['cosine']:.3f}", 
+                             help="Similarité sémantique TF-IDF")
+                
+                with col4:
+                    if pd.notnull(recipe.get('minutes')):
+                        st.metric("⏱️ Temps", f"{recipe['minutes']} min")
+                    else:
+                        st.metric("⏱️ Temps", "N/A")
+                
+                with col5:
+                    if pd.notnull(recipe.get('mean_rating_norm')):
+                        st.metric("⭐ Rating", f"{recipe['mean_rating_norm']:.2f}")
+            else:
+                # Affichage classique sans cosine
+                col1, col2, col3, col4 = st.columns(4)
+                
+                with col1:
+                    st.metric("🎯 Score Global", f"{recipe['score']:.3f}")
+                
+                with col2:
+                    st.metric("🥄 Jaccard", f"{recipe['jaccard']:.3f}")
+                
+                with col3:
+                    if pd.notnull(recipe.get('minutes')):
+                        st.metric("⏱️ Temps", f"{recipe['minutes']} min")
+                    else:
+                        st.metric("⏱️ Temps", "N/A")
+                
+                with col4:
+                    if pd.notnull(recipe.get('mean_rating_norm')):
+                        st.metric("⭐ Rating", f"{recipe['mean_rating_norm']:.2f}")
             
             # Détails des ingrédients
             if 'normalized_ingredients' in recipe and isinstance(recipe['normalized_ingredients'], list):

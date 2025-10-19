@@ -33,6 +33,20 @@ class TestUIComponentsPytest:
     """Pytest style tests for UIComponents."""
     
     @pytest.fixture
+    def sample_recipe_with_cosine(self):
+        """Sample recipe with cosine similarity for testing."""
+        return pd.Series({
+            'recipe_id': 1,
+            'name': 'Chicken Stew',
+            'score': 0.8,
+            'jaccard': 0.6,
+            'cosine': 0.75,  # Add cosine similarity
+            'minutes': 45,
+            'normalized_ingredients': ['chicken', 'carrots', 'onions', 'potatoes'],
+            'description': 'A hearty chicken stew perfect for cold days. Rich in protein and vegetables.'
+        })
+
+    @pytest.fixture
     def sample_recipe(self):
         """Sample recipe for testing."""
         return pd.Series({

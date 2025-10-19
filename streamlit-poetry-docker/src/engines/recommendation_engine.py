@@ -41,13 +41,21 @@ class RecommendationEngine:
         jaccard_bonus = 0.0
         if 'jaccard' in recommendations.columns:
             high_jaccard_bonus = (recommendations['jaccard'] > 0.3).astype(float) * 0.1
-            jaccard_weight = recommendations['jaccard'] * 0.2
+            jaccard_weight = recommendations['jaccard'] * 0.3
             jaccard_bonus = high_jaccard_bonus + jaccard_weight
         
-        # Composite score: 0.7 * normalized similarity + 0.3 * jaccard component
+        # Calculate Cosine bonus if cosine column exists
+        cosine_bonus = 0.0
+        if 'cosine' in recommendations.columns:
+            high_cosine_bonus = (recommendations['cosine'] > 0.3).astype(float) * 0.05
+            cosine_weight = recommendations['cosine'] * 0.2
+            cosine_bonus = high_cosine_bonus + cosine_weight
+        
+        # Composite score: 0.6 * normalized similarity + 0.25 * jaccard + 0.15 * cosine
         recommendations['composite_score'] = (
-            0.7 * recommendations['normalized_score'] + 
-            0.3 * jaccard_bonus
+            0.6 * recommendations['normalized_score'] + 
+            0.25 * jaccard_bonus +
+            0.15 * cosine_bonus
         )
         
         return recommendations
@@ -71,7 +79,13 @@ class RecommendationEngine:
             from reco_score import RecipeScorer
             
             # Créer le scorer et obtenir les recommandations
-            scorer = RecipeScorer(alpha=0.5, beta=0.3, gamma=0.2)
+            # 🆕 Paramètres optimisés pour système hybride Jaccard+Cosine
+            scorer = RecipeScorer(
+                alpha=0.4,  # Jaccard similarity  
+                beta=0.3,   # Rating moyen
+                gamma=0.2,  # Popularité
+                delta=0.1   # Cosine similarity (TF-IDF)
+            )
 
             recommendations = scorer.recommend(
                 recipes_df=recipes_df,
