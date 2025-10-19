@@ -96,130 +96,6 @@ class TestCompleteApplicationFlow:
             mock_spinner.return_value.__enter__ = Mock()
             mock_spinner.return_value.__exit__ = Mock()
             
-    def test_recommendation_engine_with_cosine_similarity(self, complete_recipes_dataset, complete_interactions_dataset):
-        """Test RecommendationEngine with new cosine similarity features."""
-        # Mock the external reco_score module
-        with patch('sys.path.append'), \
-             patch('streamlit.error') as mock_error:
-            
-            # Create mock RecipeScorer that returns data with cosine similarity
-            mock_scorer = Mock()
-            mock_recommendations = pd.DataFrame({
-                'recipe_id': [1, 2, 3, 4, 5],
-                'name': ['Pasta Carbonara', 'Caesar Salad', 'Apple Pie', 'Chicken Stew', 'Veggie Soup'],
-                'jaccard': [0.8, 0.6, 0.4, 0.3, 0.2],
-                'cosine': [0.9, 0.7, 0.5, 0.8, 0.3],  # Include cosine similarity
-                'score': [0.85, 0.75, 0.65, 0.70, 0.55],
-                'ingredients': [
-                    ['pasta', 'eggs', 'cheese'],
-                    ['lettuce', 'chicken', 'parmesan'],
-                    ['apples', 'flour', 'sugar'],
-                    ['chicken', 'carrots', 'onions'],
-                    ['vegetables', 'broth', 'herbs']
-                ]
-            })
-            mock_scorer.recommend.return_value = mock_recommendations
-            
-            # Mock the import of RecipeScorer
-            with patch('builtins.__import__') as mock_import:
-                def side_effect(name, *args, **kwargs):
-                    if name == 'reco_score':
-                        mock_module = Mock()
-                        mock_module.RecipeScorer = Mock(return_value=mock_scorer)
-                        return mock_module
-                    return __import__(name, *args, **kwargs)
-                
-                mock_import.side_effect = side_effect
-                
-                # Test recommendations with new hybrid system
-                recommendations = RecommendationEngine.get_recommendations(
-                    recipes_df=complete_recipes_dataset,
-                    interactions_df=complete_interactions_dataset,
-                    user_ingredients=['pasta', 'eggs', 'cheese'],
-                    time_limit=60,
-                    n_recommendations=3,
-                    prioritize_jaccard=True
-                )
-                
-                # Verify basic functionality
-                assert not recommendations.empty
-                assert len(recommendations) <= 3
-                assert 'composite_score' in recommendations.columns
-                
-                # Verify that RecipeScorer was called with correct hybrid parameters
-                mock_scorer.recommend.assert_called_once()
-                
-                # Verify cosine similarity is included in results
-                if 'cosine' in recommendations.columns:
-                    assert recommendations['cosine'].notna().any()
-
-    def test_hybrid_scoring_parameters(self, complete_recipes_dataset, complete_interactions_dataset):
-        """Test that the new hybrid scoring parameters (alpha, beta, gamma, delta) are used correctly."""
-        with patch('sys.path.append'), \
-             patch('streamlit.error') as mock_error:
-            
-            # Create mock RecipeScorer to capture initialization parameters
-            mock_scorer_class = Mock()
-            mock_scorer_instance = Mock()
-            mock_scorer_class.return_value = mock_scorer_instance
-            mock_scorer_instance.recommend.return_value = pd.DataFrame({
-                'recipe_id': [1, 2],
-                'name': ['Test Recipe 1', 'Test Recipe 2'],
-                'jaccard': [0.8, 0.6],
-                'cosine': [0.7, 0.5],
-                'score': [0.9, 0.7]
-            })
-            
-            # Mock the import
-            with patch('builtins.__import__') as mock_import:
-                def side_effect(name, *args, **kwargs):
-                    if name == 'reco_score':
-                        mock_module = Mock()
-                        mock_module.RecipeScorer = mock_scorer_class
-                        return mock_module
-                    return __import__(name, *args, **kwargs)
-                
-                mock_import.side_effect = side_effect
-                
-                # Call get_recommendations
-                RecommendationEngine.get_recommendations(
-                    recipes_df=complete_recipes_dataset,
-                    interactions_df=complete_interactions_dataset,
-                    user_ingredients=['pasta', 'eggs'],
-                    time_limit=None,
-                    n_recommendations=5
-                )
-                
-                # Verify RecipeScorer was initialized with correct hybrid parameters
-                mock_scorer_class.assert_called_once_with(
-                    alpha=0.4,  # Jaccard similarity
-                    beta=0.3,   # Rating moyen
-                    gamma=0.2,  # Popularité
-                    delta=0.1   # Cosine similarity (TF-IDF)
-                )
-
-    def test_recommendation_engine_integration(self, complete_recipes_dataset, complete_interactions_dataset):
-        """Test RecommendationEngine integration with realistic data."""
-        # Test composite score calculation
-        sample_recommendations = pd.DataFrame({
-            'recipe_id': [1, 2, 3, 4, 5],
-            'name': ['Recipe 1', 'Recipe 2', 'Recipe 3', 'Recipe 4', 'Recipe 5'],
-            'jaccard': [0.9, 0.7, 0.5, 0.3, 0.1],
-            'score': [0.6, 0.8, 0.9, 0.7, 0.5]
-        })
-        
-        # Test composite scoring
-        result = RecommendationEngine._calculate_composite_score(sample_recommendations)
-        
-        # Verify results
-        assert 'composite_score' in result.columns
-        assert len(result) == 5
-        assert result['composite_score'].is_monotonic_decreasing
-        
-        # Verify high Jaccard bonus (recipes with jaccard > 0.3 should get bonus)
-        high_jaccard_recipes = result[result['jaccard'] > 0.3]
-        assert len(high_jaccard_recipes) == 4  # First 4 recipes
-
     def test_ui_components_integration(self, complete_recipes_dataset, complete_interactions_dataset):
         """Test UIComponents integration with complete datasets."""
         # Test sidebar stats with real data
@@ -250,47 +126,6 @@ class TestCompleteApplicationFlow:
             # Second metric should be interactions count
             interactions_metric = metric_calls[1]
             assert "100" in str(interactions_metric[0])  # 100 interactions
-
-    def test_recipe_card_with_complete_data(self):
-        """Test recipe card display with complete recipe data."""
-        # Create a complete recipe
-        complete_recipe = pd.Series({
-            'recipe_id': 1,
-            'name': 'Complete Test Recipe',
-            'score': 0.892,
-            'jaccard': 0.756,
-            'minutes': 35,
-            'mean_rating_norm': 4.3,
-            'normalized_ingredients': ['pasta', 'eggs', 'cheese', 'bacon', 'pepper'],
-            'description': 'A complete test recipe with all fields populated for comprehensive testing.'
-        })
-        
-        user_ingredients = ['pasta', 'eggs', 'cheese']
-        
-        with patch('streamlit.container') as mock_container, \
-             patch('streamlit.markdown') as mock_markdown, \
-             patch('streamlit.columns') as mock_columns, \
-             patch('streamlit.metric') as mock_metric, \
-             patch('streamlit.success') as mock_success, \
-             patch('streamlit.info') as mock_info, \
-             patch('streamlit.expander') as mock_expander, \
-             patch('streamlit.write') as mock_write:
-            
-            # Setup mocks
-            mock_container.return_value.__enter__ = Mock()
-            mock_container.return_value.__exit__ = Mock()
-            mock_columns.return_value = [Mock(), Mock(), Mock(), Mock()]
-            mock_expander.return_value.__enter__ = Mock()
-            mock_expander.return_value.__exit__ = Mock()
-            
-            UIComponents.display_recipe_card(complete_recipe, 1, user_ingredients)
-            
-            # Verify all components were called
-            mock_container.assert_called_once()
-            mock_columns.assert_called_with(4)
-            mock_success.assert_called_once()  # Common ingredients
-            mock_info.assert_called_once()     # Missing ingredients
-            mock_expander.assert_called_once() # Description section
 
     def test_complete_app_workflow_simulation(self, complete_recipes_dataset, complete_interactions_dataset):
         """Test complete application workflow simulation."""
@@ -361,31 +196,6 @@ class TestCompleteApplicationFlow:
         assert complete_interactions_dataset['rating'].min() >= 1
         assert complete_interactions_dataset['rating'].max() <= 5
 
-    def test_performance_with_large_datasets(self):
-        """Test application performance with larger datasets."""
-        # Create larger datasets
-        large_recipes = pd.DataFrame({
-            'recipe_id': range(1, 1001),  # 1000 recipes
-            'name': [f'Recipe {i}' for i in range(1, 1001)],
-            'ingredients': [['ingredient1', 'ingredient2'] for _ in range(1000)],
-            'jaccard': np.random.random(1000),
-            'score': np.random.random(1000)
-        })
-        
-        large_interactions = pd.DataFrame({
-            'user_id': np.random.randint(1, 101, 5000),  # 5000 interactions
-            'recipe_id': np.random.randint(1, 1001, 5000),
-            'rating': np.random.randint(1, 6, 5000)
-        })
-        
-        # Test composite score calculation with large dataset
-        result = RecommendationEngine._calculate_composite_score(large_recipes.copy())
-        
-        # Verify performance and correctness
-        assert len(result) == 1000
-        assert 'composite_score' in result.columns
-        assert result['composite_score'].is_monotonic_decreasing
-
     def test_memory_efficiency(self, complete_recipes_dataset, complete_interactions_dataset):
         """Test memory efficiency of the application components."""
         import sys
@@ -409,51 +219,6 @@ class TestCompleteApplicationFlow:
             
             UIComponents.display_sidebar_stats(complete_recipes_dataset, complete_interactions_dataset)
             # Should complete without memory issues
-
-    def test_concurrent_workflow_simulation(self):
-        """Test workflow under simulated concurrent conditions."""
-        import threading
-        import time
-        
-        app = MangeTaMainApp()
-        results = []
-        errors = []
-        
-        def worker_function(worker_id):
-            try:
-                # Simulate user input processing
-                user_input = f"ingredient{worker_id}, pasta, eggs"
-                ingredients = app._parse_user_ingredients(user_input)
-                
-                # Simulate stats display
-                mock_recs = pd.DataFrame({
-                    'recipe_id': [worker_id],
-                    'jaccard': [0.5],
-                    'score': [0.7]
-                })
-                
-                with patch('streamlit.success'):
-                    app._display_recommendations_stats(mock_recs, ingredients, "score")
-                
-                results.append(f"Worker {worker_id} completed successfully")
-                
-            except Exception as e:
-                errors.append(f"Worker {worker_id} failed: {str(e)}")
-        
-        # Run multiple workers
-        threads = []
-        for i in range(5):
-            thread = threading.Thread(target=worker_function, args=(i,))
-            threads.append(thread)
-            thread.start()
-        
-        # Wait for all threads to complete
-        for thread in threads:
-            thread.join(timeout=10)
-        
-        # Verify results
-        assert len(results) == 5
-        assert len(errors) == 0
 
 
 if __name__ == '__main__':

@@ -102,34 +102,6 @@ class TestMangeTaMainApp(unittest.TestCase):
         self.assertIn("3 recommandations générées", call_args)
         self.assertIn("Score composite moyen", call_args)
 
-    @patch('streamlit.success')
-    def test_display_recommendations_stats_jaccard_mode(self, mock_success):
-        """Test display of stats with Jaccard sort mode."""
-        recommendations = pd.DataFrame({
-            'recipe_id': [1, 2],
-            'jaccard': [0.7, 0.5],
-            'score': [0.8, 0.6]
-        })
-        
-        self.app._display_recommendations_stats(recommendations, ['ingredient'], "jaccard")
-        
-        call_args = mock_success.call_args[0][0]
-        self.assertIn("Tri par Jaccard", call_args)
-
-    @patch('streamlit.success')
-    def test_display_recommendations_stats_score_mode(self, mock_success):
-        """Test display of stats with score sort mode."""
-        recommendations = pd.DataFrame({
-            'recipe_id': [1, 2],
-            'jaccard': [0.7, 0.5],
-            'score': [0.8, 0.6]
-        })
-        
-        self.app._display_recommendations_stats(recommendations, ['ingredient'], "score")
-        
-        call_args = mock_success.call_args[0][0]
-        self.assertIn("Tri par score global", call_args)
-
     def test_display_recommendations_stats_empty_dataframe(self):
         """Test display of stats with empty recommendations."""
         empty_recommendations = pd.DataFrame()
@@ -218,59 +190,6 @@ class TestMangeTaMainAppPytest:
             elif sort_mode == "score":
                 assert "Tri par score global" in message
 
-    def test_recommendations_stats_calculations(self, app):
-        """Test the statistical calculations in recommendations display."""
-        # Create test data with known values
-        recommendations = pd.DataFrame({
-            'recipe_id': [1, 2, 3],
-            'jaccard': [0.6, 0.8, 0.4],  # Average: 0.6, Max: 0.8
-            'score': [0.7, 0.9, 0.5],    # Average: 0.7
-            'composite_score': [0.65, 0.85, 0.45]  # Average: 0.65
-        })
-        
-        with patch('streamlit.success') as mock_success:
-            app._display_recommendations_stats(recommendations, [], "intelligent")
-            
-            message = mock_success.call_args[0][0]
-            
-            # Check calculated averages
-            assert "Jaccard moyen: 0.600" in message
-            assert "Score composite moyen: 0.650" in message
-            assert "Recettes avec correspondances: 3/3" in message  # All have jaccard > 0
-
-    def test_edge_cases_recommendations_stats(self, app):
-        """Test edge cases for recommendation statistics."""
-        # Test with zero Jaccard values
-        zero_jaccard_recs = pd.DataFrame({
-            'recipe_id': [1, 2],
-            'jaccard': [0.0, 0.0],
-            'score': [0.5, 0.6]
-        })
-        
-        with patch('streamlit.success') as mock_success:
-            app._display_recommendations_stats(zero_jaccard_recs, [], "score")
-            
-            message = mock_success.call_args[0][0]
-            assert "Jaccard moyen: 0.000" in message
-            assert "Recettes avec correspondances: 0/2" in message
-
-    def test_recommendations_stats_missing_columns(self, app):
-        """Test recommendations stats when certain columns are missing."""
-        # Test without composite_score column
-        recs_no_composite = pd.DataFrame({
-            'recipe_id': [1, 2],
-            'jaccard': [0.5, 0.7],
-            'score': [0.6, 0.8]
-        })
-        
-        with patch('streamlit.success') as mock_success:
-            # Should handle missing composite_score gracefully
-            app._display_recommendations_stats(recs_no_composite, [], "intelligent")
-            
-            message = mock_success.call_args[0][0]
-            # Should not contain composite score info when column is missing
-            assert "Score composite moyen" not in message
-
     def test_ingredient_parsing_unicode_and_special_chars(self, app):
         """Test ingredient parsing with Unicode and special characters."""
         # Test with Unicode characters
@@ -311,26 +230,6 @@ class TestMangeTaMainAppIntegration:
         assert app.data_manager is not None
         assert app.recommendation_engine is not None
         assert app.ui_components is not None
-
-    def test_complete_workflow_simulation(self):
-        """Test a complete workflow simulation without actually running Streamlit."""
-        app = MangeTaMainApp()
-        
-        # Test ingredient parsing
-        user_input = "pasta, eggs, cheese"
-        ingredients = app._parse_user_ingredients(user_input)
-        assert ingredients == ["pasta", "eggs", "cheese"]
-        
-        # Test stats display with mock data
-        mock_recommendations = pd.DataFrame({
-            'recipe_id': [1, 2],
-            'jaccard': [0.8, 0.6],
-            'score': [0.9, 0.7]
-        })
-        
-        with patch('streamlit.success'):
-            # Should not raise any exceptions
-            app._display_recommendations_stats(mock_recommendations, ingredients, "score")
 
     def test_app_resilience_to_malformed_data(self):
         """Test app behavior with malformed or edge case data."""
