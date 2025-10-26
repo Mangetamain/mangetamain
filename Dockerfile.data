@@ -1,0 +1,44 @@
+# Dockerfile for creating a data volume with preprocessed data
+FROM python:3.11-slim as preprocessing-stage
+
+# Install system dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        build-essential \
+        gcc \
+        g++ && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install Poetry
+RUN pip install poetry
+
+WORKDIR /app
+
+# Copy preprocessing configuration
+COPY preprocessing/pyproject.toml preprocessing/poetry.lock* ./
+RUN poetry config virtualenvs.create false && \
+    poetry install --only main --no-interaction --no-ansi
+
+# Copy preprocessing code
+COPY preprocessing/ ./preprocessing/
+
+# Run preprocessing and prepare data
+RUN cd preprocessing && \
+    mkdir -p /data && \
+    python pipeline.py && \
+    cp /shared_data/* /data/ 2>/dev/null || true && \
+    find . -name "*.csv" -exec cp {} /data/ \; && \
+    find . -name "*.json" -exec cp {} /data/ \; && \
+    ls -la /data/
+
+# Final stage - minimal image with just the data
+FROM alpine:latest
+
+# Copy preprocessed data from previous stage
+COPY --from=preprocessing-stage /data /data
+
+# Create volume mount point
+VOLUME ["/data"]
+
+# Default command to show what's in the data directory
+CMD ["ls", "-la", "/data"]
