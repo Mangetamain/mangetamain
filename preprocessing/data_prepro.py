@@ -30,20 +30,75 @@ class RecipeFeatures:
 
 
 class IngredientPreprocessor:
-    """Prétraitement des ingrédients avec catégorisation et normalisation via ingr_map.pkl"""
+    "prétraitement des ingrédients avec catégorisation et normalisation via ingr_map.pkl"
     CATEGORIES = {
-        'proteins': ['chicken', 'beef', 'pork', 'fish', 'salmon', 'tuna', 'shrimp',
-                     'turkey', 'lamb', 'egg', 'tofu', 'tempeh'],
-        'dairy': ['milk', 'cheese', 'butter', 'cream', 'yogurt', 'sour cream'],
-        'vegetables': ['tomato', 'onion', 'garlic', 'carrot', 'potato', 'broccoli',
-                       'spinach', 'pepper', 'mushroom', 'lettuce', 'cucumber'],
-        'fruits': ['apple', 'banana', 'orange', 'lemon', 'strawberry', 'blueberry'],
-        'grains': ['flour', 'rice', 'pasta', 'bread', 'oat', 'quinoa', 'wheat'],
-        'spices': ['salt', 'pepper', 'cumin', 'paprika', 'cinnamon', 'basil',
-                   'oregano', 'thyme', 'rosemary'],
-        'oils': ['olive oil', 'vegetable oil', 'coconut oil', 'butter'],
-        'sweeteners': ['sugar', 'honey', 'maple syrup', 'brown sugar']
-    }
+        'proteins': [
+            'chicken',
+            'beef',
+            'pork',
+            'fish',
+            'salmon',
+            'tuna',
+            'shrimp',
+            'turkey',
+            'lamb',
+            'egg',
+            'tofu',
+            'tempeh'],
+        'dairy': [
+            'milk',
+            'cheese',
+            'butter',
+            'cream',
+            'yogurt',
+            'sour cream'],
+        'vegetables': [
+            'tomato',
+            'onion',
+            'garlic',
+            'carrot',
+            'potato',
+            'broccoli',
+            'spinach',
+            'pepper',
+            'mushroom',
+            'lettuce',
+            'cucumber'],
+        'fruits': [
+            'apple',
+            'banana',
+            'orange',
+            'lemon',
+            'strawberry',
+            'blueberry'],
+        'grains': [
+            'flour',
+            'rice',
+            'pasta',
+            'bread',
+            'oat',
+            'quinoa',
+            'wheat'],
+        'spices': [
+            'salt',
+            'pepper',
+            'cumin',
+            'paprika',
+            'cinnamon',
+            'basil',
+            'oregano',
+            'thyme',
+            'rosemary'],
+        'oils': [
+            'olive oil',
+            'vegetable oil',
+            'coconut oil',
+            'butter'],
+        'sweeteners': [
+            'sugar',
+            'honey',
+            'maple syrup',
+            'brown sugar']}
     # MESURES A RETIRER
     MEASURES = r'\b(cup|tablespoon|teaspoon|pound|ounce|oz|lb|tsp|tbsp|ml|l|g|kg|pinch|dash)\b'
 
@@ -90,10 +145,17 @@ class IngredientPreprocessor:
         # nettoyage manual si ingr_map non disponible
         ing = ingredient.lower().strip()
         ing = re.sub(r'\d+\.?\d*\s*/?\s*\d*', '', ing)  # retirer les quantités
-        ing = re.sub(self.MEASURES, '', ing, flags=re.IGNORECASE)  # retirer les mesures
+        ing = re.sub(
+            self.MEASURES,
+            '',
+            ing,
+            flags=re.IGNORECASE)  # retirer les mesures
         ing = re.sub(r'[^\w\s-]', '', ing)  # retirer la ponctuation
-        ing = re.sub(r'\b(fresh|dried|frozen|chopped|diced|sliced|minced|ground)\b',
-                     '', ing, flags=re.IGNORECASE)
+        ing = re.sub(
+            r'\b(fresh|dried|frozen|chopped|diced|sliced|minced|ground)\b',
+            '',
+            ing,
+            flags=re.IGNORECASE)
         ing = ' '.join(ing.split())  # retirer les espaces multiples
         return ing
 
@@ -107,7 +169,8 @@ class IngredientPreprocessor:
 
                 if normalized_ing and len(normalized_ing) > 2:
                     cleaned.append(normalized_ing)
-            # Dédupliquer (car plusieurs variantes peuvent donner le même normalisé)
+            # Dédupliquer (car plusieurs variantes peuvent donner le même
+            # normalisé)
             return list(set(cleaned))
         except (ValueError, SyntaxError) as e:
             logger.error(f"Erreur parsing ingredients: {e}")
@@ -141,7 +204,9 @@ class NutritionPreprocessor:
             values = ast.literal_eval(nutrition_str)
             # Vérifier que nous avons le bon nombre de valeurs
             if len(values) != len(NutritionPreprocessor.NUTRITION_FIELDS):
-                logger.warning(f"Nombre incorrect de valeurs nutritionnelles: {len(values)}")
+                logger.warning(
+                    f"Nombre incorrect de valeurs nutritionnelles: {
+                        len(values)}")
                 return {}
             nutrition_dict = dict(zip(NutritionPreprocessor.NUTRITION_FIELDS,
                                       [float(v) for v in values]))
@@ -172,7 +237,6 @@ class TagsPreprocessor:
                   'lunch': ['lunch', 'main-dish'],
                   'dinner': ['dinner', 'main-dish'],
                   'snack': ['snacks', 'appetizers']}
-
     DIETARY = {
         'vegetarian': ['vegetarian', 'vegan'],
         'vegan': ['vegan'],
@@ -181,7 +245,6 @@ class TagsPreprocessor:
         'dairy-free': ['dairy-free', 'lactose-free'],
         'healthy': ['healthy', 'low-fat', 'low-sodium', 'low-calorie']
     }
-
     CUISINES = [
         'mexican', 'italian', 'chinese', 'indian', 'french', 'thai',
         'japanese', 'greek', 'spanish', 'american', 'mediterranean'
@@ -262,7 +325,8 @@ class StepsPreprocessor:
     def compute_effort_score(n_steps: int, steps: List[str]) -> float:
         # score d'effort normalisé 0=facile, 1=difficile
         step_factor = min(n_steps / 20, 1.0) * 0.6
-        avg_length = np.mean([len(step.split()) for step in steps]) if steps else 0
+        avg_length = np.mean([len(step.split())
+                             for step in steps]) if steps else 0
         length_factor = min(avg_length / 30, 1.0) * 0.3
         complex_words = ['carefully', 'slowly', 'constantly', 'meanwhile',
                          'simultaneously', 'gradually']
@@ -286,12 +350,36 @@ class DescriptionPreprocessor:
         words = text.split()
 
         # Stop words basiques
-        stop_words = {'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at',
-                      'to', 'for', 'of', 'with', 'by', 'from', 'this', 'that',
-                      'is', 'are', 'was', 'were', 'be', 'been', 'being', 'recipe'}
+        stop_words = {
+            'the',
+            'a',
+            'an',
+            'and',
+            'or',
+            'but',
+            'in',
+            'on',
+            'at',
+            'to',
+            'for',
+            'of',
+            'with',
+            'by',
+            'from',
+            'this',
+            'that',
+            'is',
+            'are',
+            'was',
+            'were',
+            'be',
+            'been',
+            'being',
+            'recipe'}
 
         # Filtrer et compter
-        filtered_words = [w for w in words if w not in stop_words and len(w) > 3]
+        filtered_words = [
+            w for w in words if w not in stop_words and len(w) > 3]
         word_counts = Counter(filtered_words)
 
         # Retourner les plus fréquents
@@ -311,7 +399,8 @@ class RecipePreprocessor:
 
         # Vérifier que le fichier existe
         if not os.path.exists(ingr_map_path):
-            logger.warning(f"⚠️ Fichier de mapping introuvable: {ingr_map_path}")
+            logger.warning(
+                f"⚠️ Fichier de mapping introuvable: {ingr_map_path}")
             logger.info("Utilisation sans mapping des ingrédients")
             ingr_map_path = None
 
@@ -328,9 +417,11 @@ class RecipePreprocessor:
     def preprocess_recipe(self, row: pd.Series) -> RecipeFeatures:
 
         # Ingrédients
-        ingredients_list = self.ingredients_prep.parse_and_clean(row['ingredients'])
+        ingredients_list = self.ingredients_prep.parse_and_clean(
+            row['ingredients'])
         ingredients_set = set(ingredients_list)
-        ingredient_categories = self.ingredients_prep.categorize(ingredients_list)
+        ingredient_categories = self.ingredients_prep.categorize(
+            ingredients_list)
 
         # Nutrition
         nutrition_dict = self.nutrition_prep.parse_nutrition(row['nutrition'])
@@ -348,7 +439,8 @@ class RecipePreprocessor:
         techniques = self.steps_prep.extract_techniques(steps)
 
         # Description
-        keywords = self.description_prep.extract_keywords(row.get('description', ''))
+        keywords = self.description_prep.extract_keywords(
+            row.get('description', ''))
 
         return RecipeFeatures(
             recipe_id=row['id'],
@@ -384,7 +476,9 @@ class RecipePreprocessor:
         # Conversion en DataFrame
         processed_df = pd.DataFrame([vars(f) for f in features_list])
 
-        logger.info(f"Prétraitement terminé: {len(processed_df)} recettes traitées")
+        logger.info(
+            f"Prétraitement terminé: {
+                len(processed_df)} recettes traitées")
 
         return processed_df
 

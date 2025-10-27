@@ -34,8 +34,57 @@ services:
     networks:
       - app-network
 
+  # Service de tests automatisés
+  tests:
+    profiles: ["testing"]
+    build:
+      context: ./streamlit-poetry-docker
+      dockerfile: Dockerfile.test
+    volumes:
+      - ./streamlit-poetry-docker:/app
+      - ./tests:/app/tests  # Monter le dossier tests depuis la racine
+      - ./preprocessing:/preprocessing
+      - ./data:/app/data
+      - shared_data:/shared_data
+      - test_reports:/app/test-reports  # Volume pour les rapports de tests
+    environment:
+      - POETRY_CACHE_DIR=/tmp/poetry_cache
+      - PYTHONPATH=/app:/preprocessing
+    working_dir: /app
+    command: poetry run pytest tests/ --cov=src --cov-report=html:/app/test-reports/htmlcov --cov-report=xml:/app/test-reports/coverage.xml --cov-report=term-missing
+    depends_on:
+      - preprocessing
+    networks:
+      - app-network
+
+  # Service de développement de tests interactif
+  tests-dev:
+    profiles: ["testing"]
+    build:
+      context: ./streamlit-poetry-docker
+      dockerfile: Dockerfile.test
+    volumes:
+      - ./streamlit-poetry-docker:/app
+      - ./tests:/app/tests  # Monter le dossier tests depuis la racine
+      - ./preprocessing:/preprocessing
+      - ./data:/app/data
+      - shared_data:/shared_data
+      - test_reports:/app/test-reports
+    environment:
+      - POETRY_CACHE_DIR=/tmp/poetry_cache
+      - PYTHONPATH=/app:/preprocessing
+    working_dir: /app
+    command: bash
+    stdin_open: true
+    tty: true
+    depends_on:
+      - preprocessing
+    networks:
+      - app-network
+
 volumes:
   shared_data:  # Volume partagé entre preprocessing et streamlit
+  test_reports:  # Volume pour les rapports de tests
 
 networks:
   app-network:

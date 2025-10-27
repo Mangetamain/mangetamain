@@ -1,0 +1,47 @@
+# Dockerfile spécialisé pour les tests
+FROM python:3.11-slim
+
+# Métadonnées
+LABEL maintainer="MangeTaMain Team"
+LABEL description="Container pour l'exécution des tests de l'application MangeTaMain"
+
+# Variables d'environnement
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV POETRY_NO_INTERACTION=1
+ENV POETRY_VENV_IN_PROJECT=1
+ENV POETRY_CACHE_DIR=/tmp/poetry_cache
+
+# Installation des dépendances système
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    curl \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Installation de Poetry
+RUN pip install poetry==1.8.3
+
+# Définir le répertoire de travail
+WORKDIR /app
+
+# Copier les fichiers de configuration Poetry
+COPY pyproject.toml poetry.lock* ./
+
+# Installer les dépendances (production + dev)
+RUN poetry install --with dev --no-root
+
+# Copier le code source
+COPY . .
+
+# Installer l'application en mode développement
+RUN poetry install --with dev
+
+# Créer le dossier pour les rapports de tests
+RUN mkdir -p /app/test-reports
+
+# Exposer le port pour les serveurs de test si nécessaire
+EXPOSE 8501
+
+# Commande par défaut pour les tests
+CMD ["poetry", "run", "pytest", "tests/", "--cov=src", "--cov-report=html:/app/test-reports/htmlcov", "--cov-report=xml:/app/test-reports/coverage.xml", "--cov-report=term-missing"]
