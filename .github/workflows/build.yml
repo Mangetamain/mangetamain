@@ -382,9 +382,9 @@ jobs:
 
       # Deploy to GitHub Pages (if on main branch)
       - name: Deploy to GitHub Pages
-        if: github.ref == 'refs/heads/main'
+        #if: github.ref == 'refs/heads/main'
         uses: peaceiris/actions-gh-pages@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.REPO_TOKEN }}
           publish_dir: ./combined-docs
           destination_dir: docs
