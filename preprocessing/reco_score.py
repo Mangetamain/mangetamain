@@ -260,7 +260,9 @@ class RecipeScorer:
             self.gamma * df['popularity']
         )
 
-        print(f"📈 Score hybride calculé: {self.alpha:.1f}*Jaccard + {self.delta:.1f}*Cosine + {self.beta:.1f}*Rating + {self.gamma:.1f}*Popularité")
+        print(f"📈 Score hybride calculé: {self.alpha:.1f}*Jaccard + "
+              f"{self.delta:.1f}*Cosine + {self.beta:.1f}*Rating + "
+              f"{self.gamma:.1f}*Popularité")
 
         #  COLONNES CORRIGÉES: utiliser 'id' partout + ajouter cosine
         columns_to_return = [
