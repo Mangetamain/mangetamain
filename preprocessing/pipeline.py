@@ -87,10 +87,7 @@ def run_complete_preprocessing():
     # Au moins quelques caractères
     recipes_df = recipes_df[recipes_df['ingredients'].str.len() > 10]
 
-    logger.info(
-        f"📉 Filtrage: {
-            initial_count:,    } → {
-            len(recipes_df):,        } recettes")
+    logger.info(f"📉 Filtrage: {initial_count:,} → {len(recipes_df):,} recettes")
 
     # === ÉTAPE 3: PREPROCESSING PARALLÈLE ===
     logger.info("⚡ 3. Preprocessing parallèle du dataset complet...")
