@@ -105,10 +105,7 @@ def run_complete_preprocessing():
         chunk = recipes_df.iloc[i:end_idx].copy()
         chunks.append((chunk, i // chunk_size + 1))
 
-    logger.info(
-        f"📦 {
-            len(chunks)} chunks créés pour {
-            len(recipes_df):,        } recettes")
+    logger.info(f"📦 {len(chunks)} chunks créés pour {len(recipes_df):,} recettes")
 
     # Traitement parallèle
     logger.info("🔄 Démarrage du traitement parallèle...")

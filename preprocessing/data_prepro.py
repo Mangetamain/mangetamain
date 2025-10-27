@@ -474,9 +474,7 @@ class RecipePreprocessor:
         # Conversion en DataFrame
         processed_df = pd.DataFrame([vars(f) for f in features_list])
 
-        logger.info(
-            f"Prétraitement terminé: {
-                len(processed_df)} recettes traitées")
+        logger.info(f"Prétraitement terminé: {len(processed_df)} recettes traitées")
 
         return processed_df
 
