@@ -300,17 +300,9 @@ jobs:
           poetry install --no-root
           poetry add sphinx sphinx-rtd-theme sphinx-autodoc-typehints
 
-      - name: Initialize and build preprocessing documentation
+      - name: Build preprocessing documentation
         working-directory: ./preprocessing
         run: |
-          # Create docs directory if it doesn't exist
-          mkdir -p docs
-          
-          # Initialize Sphinx if not already done
-          if [ ! -f "docs/source/conf.py" ]; then
-            poetry run sphinx-quickstart docs --quiet --sep --project="MangeTaMain Preprocessing" --author="Team" --release="1.0" --language="en" --extensions="sphinx.ext.autodoc,sphinx.ext.viewcode,sphinx.ext.napoleon"
-          fi
-          
           # Generate API documentation
           poetry run sphinx-apidoc -o docs/source . --force --module-first --separate
           
@@ -325,17 +317,9 @@ jobs:
           poetry install --no-root
           poetry add sphinx sphinx-rtd-theme sphinx-autodoc-typehints
 
-      - name: Initialize and build streamlit documentation
+      - name: Build streamlit documentation
         working-directory: ./streamlit-poetry-docker
         run: |
-          # Create docs directory if it doesn't exist
-          mkdir -p docs
-          
-          # Initialize Sphinx if not already done
-          if [ ! -f "docs/source/conf.py" ]; then
-            poetry run sphinx-quickstart docs --quiet --sep --project="MangeTaMain Streamlit" --author="Team" --release="1.0" --language="en" --extensions="sphinx.ext.autodoc,sphinx.ext.viewcode,sphinx.ext.napoleon"
-          fi
-          
           # Generate API documentation
           poetry run sphinx-apidoc -o docs/source src --force --module-first --separate
           
