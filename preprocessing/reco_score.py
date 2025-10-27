@@ -232,25 +232,21 @@ class RecipeScorer:
                 # Merger les scores cosine dans df principal
                 df = df.merge(df_temp[['id', 'cosine']], on='id', how='left')
                 df["cosine"] = df["cosine"].fillna(0.0)
-                print(
-                    f"✅ Cosine similarity calculée pour {
-                        len(cosine_scores)} recettes")
+                print(f"✅ Cosine similarity calculée pour {len(cosine_scores)} recettes")
             except Exception as e:
-                print(f"⚠️ Erreur cosine similarity: {
-                      e}, utilisation Jaccard seulement")
+                print(f"⚠️ Erreur cosine similarity: {e}, utilisation Jaccard seulement")
                 df["cosine"] = df["jaccard"]  # Fallback sur Jaccard
         else:
-            print(
-                "⚠️ Sklearn indisponible ou pas d'ingrédients, utilisation Jaccard seulement")
+            print("⚠️ Sklearn indisponible ou pas d'ingrédients, utilisation Jaccard seulement")
             df["cosine"] = df["jaccard"]  # Fallback sur Jaccard
 
         # Calculer les scores de base
         stats = self.compute_base_score(recipes_df, interactions_df)
-        print(f" Stats calculées pour {len(stats)} recettes")
+        print(f"📊 Stats calculées pour {len(stats)} recettes")
 
         # 🔥 MERGER CORRIGÉ: maintenant les deux ont 'id'
         df = df.merge(stats, on="id", how="left")
-        print(f" Après fusion: {len(df)} recettes")
+        print(f"🔗 Après fusion: {len(df)} recettes")
 
         # Remplir les valeurs manquantes
         df["mean_rating_norm"] = df["mean_rating_norm"].fillna(0.5)
@@ -264,8 +260,7 @@ class RecipeScorer:
             self.gamma * df['popularity']
         )
 
-        print(f"📈 Score hybride calculé: {self.alpha:.1f}*Jaccard + {
-              self.delta:.1f}*Cosine + {self.beta:.1f}*Rating + {self.gamma:.1f}*Popularité")
+        print(f"📈 Score hybride calculé: {self.alpha:.1f}*Jaccard + {self.delta:.1f}*Cosine + {self.beta:.1f}*Rating + {self.gamma:.1f}*Popularité")
 
         #  COLONNES CORRIGÉES: utiliser 'id' partout + ajouter cosine
         columns_to_return = [
@@ -286,7 +281,7 @@ class RecipeScorer:
             col for col in columns_to_return if col in df.columns]
 
         result = df.sort_values("score", ascending=False).head(top_n)
-        print(f" Retour de {len(result)} recommandations")
+        print(f"🎯 Retour de {len(result)} recommandations")
 
         return result[existing_columns]
 
