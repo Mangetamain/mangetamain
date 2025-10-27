@@ -225,8 +225,7 @@ def run_complete_preprocessing():
     logger.info(f"   - Avec ingrédients normalisés: {has_ingredients:,}")
     logger.info(f"   - Interactions: {len(interactions_df):,}")
     logger.info(f"   - Taux de succès: {metadata['success_rate']}%")
-    logger.info(f"   - Vitesse: {len(processed_recipes) /
-                                 duration.total_seconds():.0f} recettes/seconde")
+    logger.info(f"   - Vitesse: {len(processed_recipes) / duration.total_seconds():.0f} recettes/seconde")
     logger.info(f"🎯 Données prêtes pour Streamlit dans {output_dir}")
 
     return metadata
