@@ -12,12 +12,12 @@ def main():
     """Point d'entrée principal de l'application"""
     # Configuration Streamlit
     st.set_page_config(
-        page_title="🍽️ MangeTaMain - Production", 
+        page_title="🍽️ MangeTaMain - Production",
         page_icon="🍽️",
         layout="wide",
         initial_sidebar_state="expanded"
     )
-    
+
     # Créer et lancer l'application
     app = MangeTaMainApp()
     app.run()
