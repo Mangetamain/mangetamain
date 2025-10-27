@@ -148,9 +148,7 @@ def run_complete_preprocessing():
     if 'normalized_ingredients_list' in processed_recipes.columns:
         processed_recipes['normalized_ingredients'] = processed_recipes['normalized_ingredients_list']
 
-    logger.info(
-        f"🎯 Dataset final: {
-            len(processed_recipes):,    } recettes preprocessées")
+    logger.info(f"🎯 Dataset final: {len(processed_recipes):,} recettes preprocessées")
     logger.info(f"📋 Colonnes: {list(processed_recipes.columns)}")
 
     # === ÉTAPE 5: SAUVEGARDE POUR STREAMLIT ===
