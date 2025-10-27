@@ -249,11 +249,11 @@ jobs:
           name: streamlit-coverage
         continue-on-error: true
 
+   # ============================================
+  # JOB 5: BUILD Sphinx documentation
   # ============================================
-  # JOB 5: BUILD Poetry Packages
-  # ============================================
-  build-poetry:
-    name: 📦 Build Poetry Packages
+  build-documentation:
+    name: 📚 Build Documentation
     runs-on: ubuntu-latest
     needs: [test-preprocessing, test-streamlit]
     steps:
@@ -264,6 +264,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+          cache: 'pip'
 
       - name: Restore Poetry from cache
         uses: actions/cache@v3
@@ -280,40 +281,116 @@ jobs:
           path: ~/.cache/pypoetry
           key: poetry-deps-preprocessing-${{ hashFiles('preprocessing/poetry.lock') }}
 
-      - name: Update lock file - preprocessing
-        working-directory: ./preprocessing
-        run: poetry lock --no-interaction
-
-      - name: Build preprocessing package
-        working-directory: ./preprocessing
-        run: |
-          poetry build
-          ls -lh dist/
-
       - name: Cache streamlit dependencies
         uses: actions/cache@v3
         with:
-          path: ~/.cache/pypoetry
+          path: ~/.cache/pypoetry-streamlit
           key: poetry-deps-streamlit-${{ hashFiles('streamlit-poetry-docker/poetry.lock') }}
 
-      - name: Update lock file - streamlit
-        working-directory: ./streamlit-poetry-docker
-        run: poetry lock --no-interaction
+      # Build Preprocessing Documentation
+      - name: Install preprocessing dependencies
+        working-directory: ./preprocessing
+        run: |
+          poetry install --no-root
+          poetry add sphinx sphinx-rtd-theme sphinx-autodoc-typehints
 
-      - name: Build streamlit package
+      - name: Build preprocessing documentation
+        working-directory: ./preprocessing
+        run: |
+          # Create docs directory if it doesn't exist
+          mkdir -p docs/source
+          
+          # Generate API documentation
+          poetry run sphinx-apidoc -o docs/source . --force --module-first
+          
+          # Build HTML documentation
+          poetry run sphinx-build -b html docs/source docs/build/html
+        continue-on-error: true
+
+      # Build Streamlit Documentation
+      - name: Install streamlit dependencies
         working-directory: ./streamlit-poetry-docker
         run: |
-          poetry build
-          ls -lh dist/
+          poetry install --no-root
+          poetry add sphinx sphinx-rtd-theme sphinx-autodoc-typehints
 
-      - name: Upload preprocessing artifacts
+      - name: Build streamlit documentation
+        working-directory: ./streamlit-poetry-docker
+        run: |
+          # Create docs directory if it doesn't exist
+          mkdir -p docs/source
+          
+          # Generate API documentation
+          poetry run sphinx-apidoc -o docs/source src --force --module-first
+          
+          # Build HTML documentation
+          poetry run sphinx-build -b html docs/source docs/build/html
+        continue-on-error: true
+
+      # Combine and upload documentation
+      - name: Combine documentation
+        run: |
+          mkdir -p combined-docs
+          mkdir -p combined-docs/preprocessing
+          mkdir -p combined-docs/streamlit
+          
+          # Copy preprocessing docs
+          if [ -d "preprocessing/docs/build/html" ]; then
+            cp -r preprocessing/docs/build/html/* combined-docs/preprocessing/ || true
+          fi
+          
+          # Copy streamlit docs
+          if [ -d "streamlit-poetry-docker/docs/build/html" ]; then
+            cp -r streamlit-poetry-docker/docs/build/html/* combined-docs/streamlit/ || true
+          fi
+          
+          # Create index page
+          cat > combined-docs/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html>
+          <head>
+              <title>MangeTaMain Documentation</title>
+              <style>
+                  body { font-family: Arial, sans-serif; margin: 40px; }
+                  .container { max-width: 800px; margin: 0 auto; }
+                  .card { border: 1px solid #ddd; border-radius: 8px; padding: 20px; margin: 20px 0; }
+                  h1 { color: #333; text-align: center; }
+                  a { color: #007bff; text-decoration: none; }
+                  a:hover { text-decoration: underline; }
+              </style>
+          </head>
+          <body>
+              <div class="container">
+                  <h1>🍽️ MangeTaMain Documentation</h1>
+                  
+                  <div class="card">
+                      <h2>📊 Preprocessing Module</h2>
+                      <p>Data preprocessing, feature engineering, and model training components.</p>
+                      <a href="preprocessing/index.html">📖 View Preprocessing Documentation</a>
+                  </div>
+                  
+                  <div class="card">
+                      <h2>🖥️ Streamlit Application</h2>
+                      <p>User interface components and recommendation engine.</p>
+                      <a href="streamlit/index.html">📖 View Streamlit Documentation</a>
+                  </div>
+              </div>
+          </body>
+          </html>
+          EOF
+
+      - name: Upload documentation artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: preprocessing-dist
-          path: preprocessing/dist/*
+          name: documentation
+          path: combined-docs/
+          retention-days: 30
 
-      - name: Upload streamlit artifacts
-        uses: actions/upload-artifact@v4
+      # Deploy to GitHub Pages (if on main branch)
+      - name: Deploy to GitHub Pages
+        if: github.ref == 'refs/heads/main'
+        uses: peaceiris/actions-gh-pages@v3
         with:
-          name: streamlit-dist
-          path: streamlit-poetry-docker/dist/*
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./combined-docs
+          destination_dir: docs
