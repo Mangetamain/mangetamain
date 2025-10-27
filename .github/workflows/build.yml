@@ -6,9 +6,10 @@ on:
 
 # Permissions nécessaires pour GitHub Pages
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
+  actions: read
 
 jobs:
   # ============================================
@@ -390,7 +391,7 @@ jobs:
         #if: github.ref == 'refs/heads/main'
         uses: peaceiris/actions-gh-pages@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.REPO_TOKEN }}
           publish_dir: ./combined-docs
           destination_dir: docs
           force_orphan: true
