@@ -287,7 +287,7 @@ jobs:
           path: ~/.cache/pypoetry-streamlit
           key: poetry-deps-streamlit-${{ hashFiles('streamlit-poetry-docker/poetry.lock') }}
 
-      # Build Preprocessing Documentation
+           # Build Preprocessing Documentation
       - name: Install preprocessing dependencies
         working-directory: ./preprocessing
         run: |
@@ -297,11 +297,8 @@ jobs:
       - name: Build preprocessing documentation
         working-directory: ./preprocessing
         run: |
-          # Create docs directory if it doesn't exist
-          mkdir -p docs/source
-          
           # Generate API documentation
-          poetry run sphinx-apidoc -o docs/source . --force --module-first
+          poetry run sphinx-apidoc -o docs/source . --force --module-first --separate
           
           # Build HTML documentation
           poetry run sphinx-build -b html docs/source docs/build/html
@@ -317,11 +314,8 @@ jobs:
       - name: Build streamlit documentation
         working-directory: ./streamlit-poetry-docker
         run: |
-          # Create docs directory if it doesn't exist
-          mkdir -p docs/source
-          
           # Generate API documentation
-          poetry run sphinx-apidoc -o docs/source src --force --module-first
+          poetry run sphinx-apidoc -o docs/source src --force --module-first --separate
           
           # Build HTML documentation
           poetry run sphinx-build -b html docs/source docs/build/html
