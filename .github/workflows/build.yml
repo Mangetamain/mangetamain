@@ -196,15 +196,6 @@ jobs:
         run: |
           poetry run pytest tests/ --cov=. --cov-report=xml --cov-report=html --cov-report=term || true
 
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          token: ${{ secrets.REPO_TOKEN }}
-          file: ./preprocessing/coverage.xml
-          flags: preprocessing
-          name: preprocessing-coverage
-          fail_ci_if_error: false
-        continue-on-error: true
 
   # ============================================
   # JOB 4: TEST - Streamlit
@@ -251,15 +242,7 @@ jobs:
         run: |
           poetry run pytest tests/ --cov=src --cov-report=xml --cov-report=html --cov-report=term || true
 
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          token: ${{ secrets.REPO_TOKEN }}
-          file: ./streamlit-poetry-docker/coverage.xml
-          flags: streamlit
-          name: streamlit-coverage
-          fail_ci_if_error: false
-        continue-on-error: true
+
 
    # ============================================
   # JOB 5: BUILD Sphinx documentation
