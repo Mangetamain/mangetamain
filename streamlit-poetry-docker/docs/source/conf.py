@@ -1,6 +1,12 @@
 import os
 import sys
-sys.path.insert(0, os.path.abspath('../../src'))
+
+# Configuration des chemins
+project_root = os.path.abspath('../..')
+src_path = os.path.join(project_root, 'src')
+
+sys.path.insert(0, project_root)
+sys.path.insert(0, src_path)
 
 project = 'MangeTaMain Streamlit'
 copyright = '2025, MangeTaMain Team'
@@ -25,3 +31,16 @@ autodoc_default_options = {
     'undoc-members': True,
     'show-inheritance': True,
 }
+
+# Mock des imports pour éviter les erreurs de dépendances
+autodoc_mock_imports = [
+    'streamlit',
+    'pandas',
+    'numpy',
+    'plotly',
+    'scikit-learn',
+    'scipy',
+]
+
+# Ignorer les warnings pour les modules non trouvés
+suppress_warnings = ['autodoc.import_object']
