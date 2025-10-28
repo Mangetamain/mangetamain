@@ -340,6 +340,48 @@ jobs:
         continue-on-error: true
         if: always()
 
+      # Create default coverage files if not available
+      - name: Create default coverage if missing
+        run: |
+          mkdir -p integration-coverage/htmlcov
+          
+          # Check if coverage files exist, if not create defaults
+          if [ ! -f "integration-coverage/htmlcov/index.html" ]; then
+            echo "Creating default coverage report..."
+            cat > integration-coverage/htmlcov/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html>
+          <head>
+              <title>Coverage Report</title>
+              <style>
+                  body { font-family: Arial, sans-serif; margin: 40px; }
+                  .container { max-width: 600px; margin: 0 auto; }
+                  .message { padding: 20px; background-color: #f8f9fa; border-radius: 8px; }
+                  .badge { 
+                      background-color: #6c757d; 
+                      color: white; 
+                      padding: 4px 8px; 
+                      border-radius: 4px; 
+                      font-size: 12px; 
+                  }
+              </style>
+          </head>
+          <body>
+              <div class="container">
+                  <h1>Coverage Report <span class="badge">Tests en cours</span></h1>
+                  <div class="message">
+                      <p>📊 Les rapports de couverture seront disponibles après l'exécution complète des tests.</p>
+                      <p>🚀 Le pipeline CI/CD est en cours de développement et d'optimisation.</p>
+                  </div>
+              </div>
+          </body>
+          </html>
+          EOF
+            echo "Default coverage report created"
+          else
+            echo "Coverage report found"
+          fi
+
       - name: Cache preprocessing dependencies
         uses: actions/cache@v3
         with:
