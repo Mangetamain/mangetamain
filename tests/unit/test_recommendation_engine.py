@@ -9,10 +9,12 @@ import unittest
 import pytest
 import pandas as pd
 import numpy as np
-
+from unittest.mock import Mock, patch, MagicMock
+import sys
+from pathlib import Path
 
 # Import the class under test
-from engines.recommendation_engine import RecommendationEngine
+from src.engines.recommendation_engine import RecommendationEngine
 
 
 class TestRecommendationEngine(unittest.TestCase):

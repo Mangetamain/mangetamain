@@ -14,10 +14,10 @@ import pickle
 from pathlib import Path
 
 # Import all components
-from managers.data_manager import DataManager
-from engines.recommendation_engine import RecommendationEngine
-from ui.components import UIComponents
-from core.app import MangeTaMainApp
+from src.managers.data_manager import DataManager
+from src.engines.recommendation_engine import RecommendationEngine
+from src.ui.components import UIComponents
+from src.core.app import MangeTaMainApp
 
 
 class TestCompleteApplicationFlow:
