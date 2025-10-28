@@ -537,7 +537,6 @@ jobs:
                           </div>
                           <div class="links">
                               <a href="coverage/index.html">📊 Rapport de Couverture</a>
-                              <a href="coverage/" target="_blank">📁 Fichiers de Couverture</a>
                           </div>
                       </div>
                       
