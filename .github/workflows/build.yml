@@ -18,7 +18,7 @@ jobs:
   # JOB 0: PREPARE - Setup Python & Poetry
   # ============================================
   prepare:
-    name: 🔧 Prepare Environment
+    name: Prepare Environment
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -52,7 +52,7 @@ jobs:
   # JOB 1: LINT - Preprocessing
   # ============================================
   lint-preprocessing:
-    name: 🔍 Lint Preprocessing
+    name: Lint Preprocessing
     runs-on: ubuntu-latest
     needs: [prepare]
     steps:
@@ -104,7 +104,7 @@ jobs:
   # JOB 2: LINT - Streamlit
   # ============================================
   lint-streamlit:
-    name: 🔍 Lint Streamlit
+    name: Lint Streamlit
     runs-on: ubuntu-latest
     needs: [prepare]
     steps:
@@ -155,7 +155,7 @@ jobs:
   # JOB 3: TEST - Preprocessing
   # ============================================
   test-preprocessing:
-    name: 🧪 Test Preprocessing
+    name: Test Preprocessing
     runs-on: ubuntu-latest
     needs: [lint-preprocessing]
     steps:
@@ -201,7 +201,7 @@ jobs:
   # JOB 4: TEST - Streamlit
   # ============================================
   test-streamlit:
-    name: 🧪 Test Streamlit
+    name: Test Streamlit
     runs-on: ubuntu-latest
     needs: [lint-streamlit]
     steps:
@@ -248,7 +248,7 @@ jobs:
   # JOB 5: TEST - Integration Tests
   # ============================================
   test-integration:
-    name: 🧪 Integration Tests
+    name: Integration Tests
     runs-on: ubuntu-latest
     needs: [test-preprocessing, test-streamlit]
     steps:
@@ -263,7 +263,7 @@ jobs:
 
       - name: Install all dependencies
         run: |
-          echo "📦 Installing all required dependencies..."
+          echo "Installing all required dependencies..."
           pip install streamlit pandas numpy scikit-learn plotly pytest pytest-cov pytest-mock
           
           # Install additional dependencies that might be needed
@@ -298,7 +298,7 @@ jobs:
 
       - name: Run integration tests with coverage
         run: |
-          echo "🧪 Running integration tests..."
+          echo "Running integration tests..."
           pytest tests/ \
             --cov=preprocessing \
             --cov=streamlit-poetry-docker/src \
@@ -322,7 +322,7 @@ jobs:
   # JOB 6: BUILD Sphinx documentation
   # ============================================
   build-documentation:
-    name: 📚 Build Documentation
+    name: Build Documentation
     runs-on: ubuntu-latest
     needs: [test-integration]
     steps:
@@ -409,9 +409,9 @@ jobs:
           # Copy preprocessing docs
           if [ -d "preprocessing/docs/build/html" ]; then
             cp -r preprocessing/docs/build/html/* combined-docs/preprocessing/ || true
-            echo "✅ Preprocessing documentation copied"
+            echo "Preprocessing documentation copied"
           else
-            echo "⚠️ No preprocessing documentation found"
+            echo "No preprocessing documentation found"
             mkdir -p combined-docs/preprocessing
             echo "<html><body><h1>Preprocessing Documentation</h1><p>Documentation not available</p></body></html>" > combined-docs/preprocessing/index.html
           fi
@@ -419,9 +419,9 @@ jobs:
           # Copy streamlit docs
           if [ -d "streamlit-poetry-docker/docs/build/html" ]; then
             cp -r streamlit-poetry-docker/docs/build/html/* combined-docs/streamlit/ || true
-            echo "✅ Streamlit documentation copied"
+            echo "Streamlit documentation copied"
           else
-            echo "⚠️ No streamlit documentation found"
+            echo "No streamlit documentation found"
             mkdir -p combined-docs/streamlit
             echo "<html><body><h1>Streamlit Documentation</h1><p>Documentation not available</p></body></html>" > combined-docs/streamlit/index.html
           fi
@@ -429,9 +429,9 @@ jobs:
           # Copy integration test coverage reports
           if [ -d "integration-coverage/htmlcov" ]; then
             cp -r integration-coverage/htmlcov/* combined-docs/coverage/ || true
-            echo "✅ Integration test coverage copied"
+            echo "Integration test coverage copied"
           else
-            echo "⚠️ No integration coverage found, creating placeholder"
+            echo "No integration coverage found, creating placeholder"
             mkdir -p combined-docs/coverage
             cat > combined-docs/coverage/index.html << 'EOF'
           <!DOCTYPE html>
@@ -448,7 +448,7 @@ jobs:
               <div class="container">
                   <h1>Coverage Report</h1>
                   <div class="message">
-                      <p>⚠️ Coverage report not available</p>
+                      <p> Coverage report not available</p>
                       <p>Integration tests may not have generated coverage data.</p>
                   </div>
               </div>
@@ -460,7 +460,7 @@ jobs:
           # Copy coverage badge if available
           if [ -f "integration-coverage/coverage.svg" ]; then
             cp integration-coverage/coverage.svg combined-docs/coverage/ || true
-            echo "✅ Coverage badge copied"
+            echo "Coverage badge copied"
           fi
           
           # Create enhanced index page with coverage
@@ -468,7 +468,7 @@ jobs:
           <!DOCTYPE html>
           <html>
           <head>
-              <title>MangeTaMain Documentation</title>
+              <title>MangeTaMain : Documentation du projet</title>
               <style>
                   body { font-family: Arial, sans-serif; margin: 40px; background-color: #f8f9fa; }
                   .container { max-width: 1000px; margin: 0 auto; }
@@ -508,13 +508,13 @@ jobs:
           <body>
               <div class="container">
                   <div class="header">
-                      <h1>🍽️ MangeTaMain Documentation</h1>
+                      <h1> MangeTaMain : Documentation du projet</h1>
                       <p class="subtitle">Système de recommandation de recettes personnalisées</p>
                   </div>
                   
                   <div class="grid">
                       <div class="card">
-                          <h2><span class="status-indicator status-success"></span>📊 Module Preprocessing</h2>
+                          <h2><span class="status-indicator status-success"></span> Module Preprocessing</h2>
                           <p>Préparation des données, feature engineering et entraînement des modèles.</p>
                           <div class="links">
                               <a href="preprocessing/index.html">📖 Documentation API</a>
@@ -522,50 +522,34 @@ jobs:
                       </div>
                       
                       <div class="card">
-                          <h2><span class="status-indicator status-success"></span>🖥️ Application Streamlit</h2>
+                          <h2><span class="status-indicator status-success"></span>Application Streamlit</h2>
                           <p>Interface utilisateur et moteur de recommandation.</p>
                           <div class="links">
-                              <a href="streamlit/index.html">📖 Documentation API</a>
+                              <a href="streamlit/index.html"> Documentation API</a>
                           </div>
                       </div>
                       
                       <div class="card full-width">
-                          <h2><span class="status-indicator status-success"></span>🧪 Tests & Coverage</h2>
+                          <h2><span class="status-indicator status-success"></span>Rapport de couverture des tests</h2>
                           <p>Rapports de tests d'intégration et couverture de code.</p>
                           <div class="coverage-badge">
                               <img src="coverage/coverage.svg" alt="Test Coverage" style="margin-right: 10px;" onerror="this.style.display='none'">
                           </div>
                           <div class="links">
-                              <a href="coverage/index.html">📊 Rapport de Couverture</a>
+                              <a href="coverage/index.html">Rapport de Couverture</a>
                           </div>
                       </div>
                       
-                      <div class="card full-width">
-                          <h2>📋 Guide d'utilisation</h2>
-                          <p>
-                              <strong>🔧 Preprocessing:</strong> Consultez la documentation API pour comprendre les pipelines de données.<br>
-                              <strong>🖥️ Streamlit:</strong> Explorez l'interface utilisateur et les composants de recommandation.<br>
-                              <strong>🧪 Tests:</strong> Vérifiez la couverture des tests pour évaluer la qualité du code.
-                          </p>
-                      </div>
+                     
                   </div>
-                  
-                  <div class="card">
-                      <h2>📈 Métriques du Projet</h2>
-                      <p>
-                          <strong>🏗️ Build Status:</strong> <span class="status-indicator status-success"></span>Passing<br>
-                          <strong>🧪 Tests:</strong> <span class="status-indicator status-success"></span>Integration Tests Executed<br>
-                          <strong>📊 Coverage:</strong> <span class="status-indicator status-success"></span>Reports Available<br>
-                          <strong>📚 Docs:</strong> <span class="status-indicator status-success"></span>Generated Successfully
-                      </p>
-                  </div>
+              
               </div>
           </body>
           </html>
           EOF
           
-          echo "✅ Documentation combined successfully"
-          echo "📁 Combined docs structure:"
+          echo "Documentation combined successfully"
+          echo "Combined docs structure:"
           find combined-docs -type f -name "*.html" | head -10
 
       - name: Upload documentation artifacts
@@ -577,7 +561,7 @@ jobs:
 
       # Deploy to GitHub Pages (if on main branch)
       - name: Deploy to GitHub Pages
-        if: github.ref == 'refs/heads/main'
+        #if: github.ref == 'refs/heads/main'
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.REPO_TOKEN }}
