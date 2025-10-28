@@ -295,8 +295,8 @@ jobs:
           pytest tests/ \
             --cov=preprocessing \
             --cov=streamlit-poetry-docker/src \
-            --cov-report=xml \
-            --cov-report=html \
+            --cov-report=xml:coverage.xml \
+            --cov-report=html:htmlcov \
             --cov-report=term-missing \
             -v || echo "Tests completed with issues"
         continue-on-error: false
