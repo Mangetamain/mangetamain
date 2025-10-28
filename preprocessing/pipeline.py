@@ -87,10 +87,7 @@ def run_complete_preprocessing():
     # Au moins quelques caractères
     recipes_df = recipes_df[recipes_df['ingredients'].str.len() > 10]
 
-    logger.info(
-        f"📉 Filtrage: {
-            initial_count:,    } → {
-            len(recipes_df):,        } recettes")
+    logger.info(f"📉 Filtrage: {initial_count:,} → {len(recipes_df):,} recettes")
 
     # === ÉTAPE 3: PREPROCESSING PARALLÈLE ===
     logger.info("⚡ 3. Preprocessing parallèle du dataset complet...")
@@ -108,10 +105,7 @@ def run_complete_preprocessing():
         chunk = recipes_df.iloc[i:end_idx].copy()
         chunks.append((chunk, i // chunk_size + 1))
 
-    logger.info(
-        f"📦 {
-            len(chunks)} chunks créés pour {
-            len(recipes_df):,        } recettes")
+    logger.info(f"📦 {len(chunks)} chunks créés pour {len(recipes_df):,} recettes")
 
     # Traitement parallèle
     logger.info("🔄 Démarrage du traitement parallèle...")
@@ -154,9 +148,7 @@ def run_complete_preprocessing():
     if 'normalized_ingredients_list' in processed_recipes.columns:
         processed_recipes['normalized_ingredients'] = processed_recipes['normalized_ingredients_list']
 
-    logger.info(
-        f"🎯 Dataset final: {
-            len(processed_recipes):,    } recettes preprocessées")
+    logger.info(f"🎯 Dataset final: {len(processed_recipes):,} recettes preprocessées")
     logger.info(f"📋 Colonnes: {list(processed_recipes.columns)}")
 
     # === ÉTAPE 5: SAUVEGARDE POUR STREAMLIT ===
@@ -233,8 +225,7 @@ def run_complete_preprocessing():
     logger.info(f"   - Avec ingrédients normalisés: {has_ingredients:,}")
     logger.info(f"   - Interactions: {len(interactions_df):,}")
     logger.info(f"   - Taux de succès: {metadata['success_rate']}%")
-    logger.info(f"   - Vitesse: {len(processed_recipes) /
-                                 duration.total_seconds():.0f} recettes/seconde")
+    logger.info(f"   - Vitesse: {len(processed_recipes) / duration.total_seconds():.0f} recettes/seconde")
     logger.info(f"🎯 Données prêtes pour Streamlit dans {output_dir}")
 
     return metadata

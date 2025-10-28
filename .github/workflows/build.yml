@@ -1,0 +1,385 @@
+name: CI/CD Pipeline - MangeTaMain
+
+on:
+  push:
+    branches: [ '**' ]  # Triggers on all branches
+  pull_request:
+    branches: [ main, develop ]
+
+# Permissions nécessaires pour GitHub Pages
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+  actions: read
+
+jobs:
+  # ============================================
+  # JOB 0: PREPARE - Setup Python & Poetry
+  # ============================================
+  prepare:
+    name: 🔧 Prepare Environment
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Cache Poetry installation
+        id: cache-poetry
+        uses: actions/cache@v3
+        with:
+          path: ~/.local
+          key: poetry-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+
+      - name: Install Poetry
+        if: steps.cache-poetry.outputs.cache-hit != 'true'
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+
+      - name: Add Poetry to PATH
+        run: echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Verify Poetry installation
+        run: poetry --version
+
+  # ============================================
+  # JOB 1: LINT - Preprocessing
+  # ============================================
+  lint-preprocessing:
+    name: 🔍 Lint Preprocessing
+    runs-on: ubuntu-latest
+    needs: [prepare]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Restore Poetry from cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.local
+          key: poetry-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+
+      - name: Add Poetry to PATH
+        run: echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pypoetry
+          key: poetry-deps-preprocessing-${{ hashFiles('preprocessing/poetry.lock') }}
+          restore-keys: |
+            poetry-deps-preprocessing-
+
+      - name: Update lock file if needed
+        working-directory: ./preprocessing
+        run: poetry lock --no-interaction
+
+      - name: Install dependencies
+        working-directory: ./preprocessing
+        run: poetry install --no-root
+
+      - name: Run flake8
+        working-directory: ./preprocessing
+        run: |
+          poetry run flake8 . --count --max-line-length=120 --statistics --exclude=.venv,__pycache__,*.pyc,.git
+
+      - name: Run pylint
+        working-directory: ./preprocessing
+        run: |
+          poetry run pylint **/*.py --fail-under=7.0 || true
+
+  # ============================================
+  # JOB 2: LINT - Streamlit
+  # ============================================
+  lint-streamlit:
+    name: 🔍 Lint Streamlit
+    runs-on: ubuntu-latest
+    needs: [prepare]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Restore Poetry from cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.local
+          key: poetry-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+
+      - name: Add Poetry to PATH
+        run: echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pypoetry
+          key: poetry-deps-streamlit-${{ hashFiles('streamlit-poetry-docker/poetry.lock') }}
+          restore-keys: poetry-deps-streamlit-
+
+      - name: Update lock file if needed
+        working-directory: ./streamlit-poetry-docker
+        run: poetry lock --no-interaction
+
+      - name: Install dependencies
+        working-directory: ./streamlit-poetry-docker
+        run: poetry install --no-root
+
+      - name: Run flake8
+        working-directory: ./streamlit-poetry-docker
+        run: |
+          poetry run flake8 src/ app.py --count --max-line-length=120 --statistics --exclude=.venv,__pycache__,*.pyc,.git
+
+      #- name: Run pylint
+      #  working-directory: ./streamlit-poetry-docker
+      #  run: |
+      #    poetry run pylint src/ app.py --fail-under=7.0 || true
+
+  # ============================================
+  # JOB 3: TEST - Preprocessing
+  # ============================================
+  test-preprocessing:
+    name: 🧪 Test Preprocessing
+    runs-on: ubuntu-latest
+    needs: [lint-preprocessing]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Restore Poetry from cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.local
+          key: poetry-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+
+      - name: Add Poetry to PATH
+        run: echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pypoetry
+          key: poetry-deps-preprocessing-${{ hashFiles('preprocessing/poetry.lock') }}
+
+      - name: Update lock file if needed
+        working-directory: ./preprocessing
+        run: poetry lock --no-interaction
+
+      - name: Install dependencies
+        working-directory: ./preprocessing
+        run: poetry install --no-root
+
+      - name: Run pytest with coverage
+        working-directory: ./preprocessing
+        run: |
+          poetry run pytest tests/ --cov=. --cov-report=xml --cov-report=html --cov-report=term || true
+
+
+  # ============================================
+  # JOB 4: TEST - Streamlit
+  # ============================================
+  test-streamlit:
+    name: 🧪 Test Streamlit
+    runs-on: ubuntu-latest
+    needs: [lint-streamlit]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Restore Poetry from cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.local
+          key: poetry-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+
+      - name: Add Poetry to PATH
+        run: echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pypoetry
+          key: poetry-deps-streamlit-${{ hashFiles('streamlit-poetry-docker/poetry.lock') }}
+
+      - name: Update lock file if needed
+        working-directory: ./streamlit-poetry-docker
+        run: poetry lock --no-interaction
+
+      - name: Install dependencies
+        working-directory: ./streamlit-poetry-docker
+        run: poetry install --no-root
+
+      - name: Run pytest with coverage
+        working-directory: ./streamlit-poetry-docker
+        run: |
+          poetry run pytest tests/ --cov=src --cov-report=xml --cov-report=html --cov-report=term || true
+
+
+
+   # ============================================
+  # JOB 5: BUILD Sphinx documentation
+  # ============================================
+  build-documentation:
+    name: 📚 Build Documentation
+    runs-on: ubuntu-latest
+    needs: [test-preprocessing, test-streamlit]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Restore Poetry from cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.local
+          key: poetry-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+
+      - name: Add Poetry to PATH
+        run: echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Cache preprocessing dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pypoetry
+          key: poetry-deps-preprocessing-${{ hashFiles('preprocessing/poetry.lock') }}
+
+      - name: Cache streamlit dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pypoetry-streamlit
+          key: poetry-deps-streamlit-${{ hashFiles('streamlit-poetry-docker/poetry.lock') }}
+
+           # Build Preprocessing Documentation
+      - name: Install preprocessing dependencies
+        working-directory: ./preprocessing
+        run: |
+          poetry install --no-root
+          poetry add sphinx sphinx-rtd-theme sphinx-autodoc-typehints
+
+      - name: Build preprocessing documentation
+        working-directory: ./preprocessing
+        run: |
+          # Generate API documentation
+          poetry run sphinx-apidoc -o docs/source . --force --module-first --separate
+          
+          # Build HTML documentation
+          poetry run sphinx-build -b html docs/source docs/build/html
+        continue-on-error: true
+
+      # Build Streamlit Documentation
+      - name: Install streamlit dependencies
+        working-directory: ./streamlit-poetry-docker
+        run: |
+          poetry install --no-root
+          poetry add sphinx sphinx-rtd-theme sphinx-autodoc-typehints
+
+      - name: Build streamlit documentation
+        working-directory: ./streamlit-poetry-docker
+        run: |
+          # Generate API documentation
+          poetry run sphinx-apidoc -o docs/source src --force --module-first --separate
+          
+          # Build HTML documentation
+          poetry run sphinx-build -b html docs/source docs/build/html
+        continue-on-error: true
+
+      # Combine and upload documentation
+      - name: Combine documentation
+        run: |
+          mkdir -p combined-docs
+          mkdir -p combined-docs/preprocessing
+          mkdir -p combined-docs/streamlit
+          
+          # Copy preprocessing docs
+          if [ -d "preprocessing/docs/build/html" ]; then
+            cp -r preprocessing/docs/build/html/* combined-docs/preprocessing/ || true
+          fi
+          
+          # Copy streamlit docs
+          if [ -d "streamlit-poetry-docker/docs/build/html" ]; then
+            cp -r streamlit-poetry-docker/docs/build/html/* combined-docs/streamlit/ || true
+          fi
+          
+          # Create index page
+          cat > combined-docs/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html>
+          <head>
+              <title>MangeTaMain Documentation</title>
+              <style>
+                  body { font-family: Arial, sans-serif; margin: 40px; }
+                  .container { max-width: 800px; margin: 0 auto; }
+                  .card { border: 1px solid #ddd; border-radius: 8px; padding: 20px; margin: 20px 0; }
+                  h1 { color: #333; text-align: center; }
+                  a { color: #007bff; text-decoration: none; }
+                  a:hover { text-decoration: underline; }
+              </style>
+          </head>
+          <body>
+              <div class="container">
+                  <h1>🍽️ MangeTaMain Documentation</h1>
+                  
+                  <div class="card">
+                      <h2>📊 Preprocessing Module</h2>
+                      <p>Data preprocessing, feature engineering, and model training components.</p>
+                      <a href="preprocessing/index.html">📖 View Preprocessing Documentation</a>
+                  </div>
+                  
+                  <div class="card">
+                      <h2>🖥️ Streamlit Application</h2>
+                      <p>User interface components and recommendation engine.</p>
+                      <a href="streamlit/index.html">📖 View Streamlit Documentation</a>
+                  </div>
+              </div>
+          </body>
+          </html>
+          EOF
+
+      - name: Upload documentation artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: documentation
+          path: combined-docs/
+          retention-days: 30
+
+      # Deploy to GitHub Pages (if on main branch)
+      - name: Deploy to GitHub Pages
+        if: github.ref == 'refs/heads/main'
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.REPO_TOKEN }}
+          publish_dir: ./combined-docs
+          force_orphan: true

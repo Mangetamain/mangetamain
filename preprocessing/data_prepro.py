@@ -204,9 +204,7 @@ class NutritionPreprocessor:
             values = ast.literal_eval(nutrition_str)
             # Vérifier que nous avons le bon nombre de valeurs
             if len(values) != len(NutritionPreprocessor.NUTRITION_FIELDS):
-                logger.warning(
-                    f"Nombre incorrect de valeurs nutritionnelles: {
-                        len(values)}")
+                logger.warning(f"Nombre incorrect de valeurs nutritionnelles: {len(values)}")
                 return {}
             nutrition_dict = dict(zip(NutritionPreprocessor.NUTRITION_FIELDS,
                                       [float(v) for v in values]))
@@ -476,9 +474,7 @@ class RecipePreprocessor:
         # Conversion en DataFrame
         processed_df = pd.DataFrame([vars(f) for f in features_list])
 
-        logger.info(
-            f"Prétraitement terminé: {
-                len(processed_df)} recettes traitées")
+        logger.info(f"Prétraitement terminé: {len(processed_df)} recettes traitées")
 
         return processed_df
 
