@@ -1,16 +1,29 @@
 services:
-  # Service de preprocessing automatique
+  # Data volume service - pulls preprocessed data from Docker Hub
+  data-volume:
+    image: andranik777/mangetamain-data:latest
+    platform: linux/arm64  # Support Apple Silicon
+    profiles: ["use-prebuilt"]
+    volumes:
+      - preprocessed_data:/shared_data
+    command: /bin/sh -c "cp -r /data/* /shared_data/ && echo 'Data volume ready' && tail -f /dev/null"
+    networks:
+      - app-network
+
+  # Service de preprocessing - only runs when rebuilding data
   preprocessing:
     build: ./preprocessing
+    profiles: ["rebuild-data"]
     volumes:
       - ./preprocessing:/app
-      - ./data:/app/data
-      - shared_data:/shared_data  # Volume partagé pour les données preprocessées
+      - kaggle_cache:/app/cache  # Cache Kaggle pour éviter les re-téléchargements
+      - preprocessed_data:/shared_data  # Volume for preprocessed data
     environment:
       - POETRY_CACHE_DIR=/tmp/poetry_cache
       - PYTHONPATH=/app
+      - KAGGLE_CONFIG_DIR=/app/.kaggle  # Configuration Kaggle
     working_dir: /app
-    command: bash -c "poetry install && poetry run python pipeline.py"  # Exécution automatique du pipeline complet
+    command: bash -c "poetry install && poetry run python pipeline.py && echo 'Preprocessing complete - data ready in /shared_data'"
     networks:
       - app-network
 
@@ -22,15 +35,12 @@ services:
     volumes:
       - ./streamlit-poetry-docker:/app
       - ./preprocessing:/preprocessing
-      - ./data:/app/data
-      - shared_data:/shared_data  # Accès aux données preprocessées
+      - preprocessed_data:/shared_data  # Use preprocessed data from volume
     environment:
       - POETRY_CACHE_DIR=/tmp/poetry_cache
       - PYTHONPATH=/app:/preprocessing
     working_dir: /app
     command: poetry run streamlit run app.py --server.address=0.0.0.0 --server.port=8501
-    depends_on:
-      - preprocessing  # Attendre que le preprocessing soit terminé
     networks:
       - app-network
 
@@ -45,15 +55,13 @@ services:
       - ./tests:/app/tests  # Monter le dossier tests depuis la racine
       - ./preprocessing:/preprocessing
       - ./data:/app/data
-      - shared_data:/shared_data
+      - preprocessed_data:/shared_data
       - test_reports:/app/test-reports  # Volume pour les rapports de tests
     environment:
       - POETRY_CACHE_DIR=/tmp/poetry_cache
       - PYTHONPATH=/app:/preprocessing
     working_dir: /app
     command: poetry run pytest tests/ --cov=src --cov-report=html:/app/test-reports/htmlcov --cov-report=xml:/app/test-reports/coverage.xml --cov-report=term-missing
-    depends_on:
-      - preprocessing
     networks:
       - app-network
 
@@ -67,8 +75,7 @@ services:
       - ./streamlit-poetry-docker:/app
       - ./tests:/app/tests  # Monter le dossier tests depuis la racine
       - ./preprocessing:/preprocessing
-      - ./data:/app/data
-      - shared_data:/shared_data
+      - preprocessed_data:/app/data
       - test_reports:/app/test-reports
     environment:
       - POETRY_CACHE_DIR=/tmp/poetry_cache
@@ -77,13 +84,12 @@ services:
     command: bash
     stdin_open: true
     tty: true
-    depends_on:
-      - preprocessing
     networks:
       - app-network
 
 volumes:
-  shared_data:  # Volume partagé entre preprocessing et streamlit
+  preprocessed_data:  # Volume for preprocessed data (from Docker Hub or rebuilt)
+  kaggle_cache:  # Cache pour les données Kaggle
   test_reports:  # Volume pour les rapports de tests
 
 networks:
