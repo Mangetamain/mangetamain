@@ -245,10 +245,10 @@ jobs:
 
 
    # ============================================
-  # JOB 4.5: TEST - Integration Tests 
+  # JOB 5: TEST - Integration Tests
   # ============================================
   test-integration:
-    name: 🧪 Test Integration
+    name: 🧪 Integration Tests
     runs-on: ubuntu-latest
     needs: [test-preprocessing, test-streamlit]
     steps:
@@ -319,7 +319,7 @@ jobs:
         if: always()
 
   # ============================================
-  # JOB 5: BUILD Sphinx documentation
+  # JOB 6: BUILD Sphinx documentation
   # ============================================
   build-documentation:
     name: 📚 Build Documentation
