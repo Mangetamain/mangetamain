@@ -245,12 +245,82 @@ jobs:
 
 
    # ============================================
+  # JOB 4.5: TEST - Integration Tests 
+  # ============================================
+  test-integration:
+    name: 🧪 Test Integration
+    runs-on: ubuntu-latest
+    needs: [test-preprocessing, test-streamlit]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Restore Poetry from cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.local
+          key: poetry-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+
+      - name: Add Poetry to PATH
+        run: echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Cache preprocessing dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pypoetry-preprocessing
+          key: poetry-deps-preprocessing-${{ hashFiles('preprocessing/poetry.lock') }}
+
+      - name: Cache streamlit dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pypoetry-streamlit
+          key: poetry-deps-streamlit-${{ hashFiles('streamlit-poetry-docker/poetry.lock') }}
+
+      - name: Install preprocessing dependencies
+        working-directory: ./preprocessing
+        run: |
+          poetry lock --no-interaction
+          poetry install --no-root
+
+      - name: Install streamlit dependencies
+        working-directory: ./streamlit-poetry-docker
+        run: |
+          poetry lock --no-interaction
+          poetry install --no-root
+
+      - name: Set up Python path for integration tests
+        run: |
+          echo "PYTHONPATH=${{ github.workspace }}/preprocessing:${{ github.workspace }}/streamlit-poetry-docker/src:$PYTHONPATH" >> $GITHUB_ENV
+
+      - name: Install test dependencies for integration tests
+        run: |
+          pip install pytest pytest-cov pytest-mock pandas numpy
+
+      - name: Run integration tests with coverage
+        run: |
+          pytest tests/ --cov=preprocessing --cov=streamlit-poetry-docker/src --cov-report=xml --cov-report=html --cov-report=term-missing -v || true
+
+      - name: Upload integration test coverage reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-coverage-reports
+          path: |
+            htmlcov/coverage.xml
+          retention-days: 30
+
+  # ============================================
   # JOB 5: BUILD Sphinx documentation
   # ============================================
   build-documentation:
     name: 📚 Build Documentation
     runs-on: ubuntu-latest
-    needs: [test-preprocessing, test-streamlit]
+    needs: [test-integration]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
