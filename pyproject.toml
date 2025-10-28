@@ -1,0 +1,69 @@
+# Configuration pytest pour le projet MangeTaMain
+
+[tool.pytest.ini_options]
+# Dossiers de tests
+testpaths = [
+    "tests"
+]
+
+# Patterns pour découvrir les tests
+python_files = [
+    "test_*.py",
+    "*_test.py"
+]
+
+python_classes = [
+    "Test*"
+]
+
+python_functions = [
+    "test_*"
+]
+
+# Marqueurs personnalisés
+markers = [
+    "unit: Tests unitaires rapides",
+    "integration: Tests d'intégration",
+    "performance: Tests de performance (lents)",
+    "slow: Tests lents à exécuter",
+    "fast: Tests rapides",
+    "preprocessing: Tests du preprocessing",
+    "recommendation: Tests du moteur de recommandation",
+    "streamlit: Tests de l'interface Streamlit"
+]
+
+# Options d'affichage
+addopts = [
+    "-v",                    # Mode verbose
+    "--tb=short",           # Traceback court
+    "--strict-markers",     # Échec si marqueur inconnu
+    "--disable-warnings",   # Désactiver les warnings
+    "--color=yes",          # Couleurs dans le terminal
+    "--durations=10"        # Afficher les 10 tests les plus lents
+]
+
+# Filtres pour les warnings
+filterwarnings = [
+    "ignore::UserWarning",
+    "ignore::DeprecationWarning",
+    "ignore::PendingDeprecationWarning"
+]
+
+# Configuration de couverture
+addopts = [
+    "-v",
+    "--tb=short",
+    "--strict-markers",
+    "--disable-warnings",
+    "--color=yes",
+    "--durations=10",
+    "--cov=preprocessing",           # Mesurer la couverture du module preprocessing
+    "--cov=streamlit_poetry_docker", # Mesurer la couverture de l'app Streamlit
+    "--cov-report=html",            # Rapport HTML
+    "--cov-report=term-missing",    # Rapport terminal avec lignes manquantes
+    "--cov-report=xml",             # Rapport XML pour CI/CD
+    "--cov-fail-under=80"           # Échec si couverture < 80%
+]
+
+# Dossier pour les rapports de couverture
+# Les rapports seront dans htmlcov/
