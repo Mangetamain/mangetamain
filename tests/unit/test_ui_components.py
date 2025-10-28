@@ -6,11 +6,10 @@ Tests simplifiés qui passent tous.
 import unittest
 import pandas as pd
 import pytest
-from unittest.mock import Mock, patch, MagicMock
-from typing import List
+from unittest.mock import  patch
 
 # Import the module to test
-from src.ui.components import UIComponents
+from ui.components import UIComponents
 
 
 class TestUIComponentsBasic(unittest.TestCase):
