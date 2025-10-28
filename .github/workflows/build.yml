@@ -286,7 +286,7 @@ jobs:
               print(f"Added to path: {preprocessing_path}")
           
           # Add streamlit src module to path
-          streamlit_src_path = project_root / "streamlit-poetry-docker" / "src"
+          streamlit_src_path = project_root / "streamlit-poetry-docker"
           if streamlit_src_path.exists():
               sys.path.insert(0, str(streamlit_src_path))
               print(f"Added to path: {streamlit_src_path}")
