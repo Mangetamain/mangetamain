@@ -23,6 +23,7 @@ show_help() {
     echo "  -h, --help           Afficher cette aide"
     echo "  -u, --unit           Exécuter seulement les tests unitaires"
     echo "  -i, --integration    Exécuter seulement les tests d'intégration"
+    echo "  -p, --performance    Exécuter seulement les tests de performance"
     echo "  -c, --coverage       Générer le rapport de couverture uniquement"
     echo "  -d, --dev           Mode développement interactif"
     echo "  -b, --build         Forcer la reconstruction de l'image"
@@ -32,6 +33,8 @@ show_help() {
     echo "Exemples:"
     echo "  $0                  # Exécuter tous les tests"
     echo "  $0 -u               # Tests unitaires seulement"
+    echo "  $0 -i               # Tests d'intégration seulement"
+    echo "  $0 -p               # Tests de performance seulement"
     echo "  $0 -c               # Générer le rapport de couverture"
     echo "  $0 -d               # Mode développement interactif"
     echo "  $0 --clean          # Nettoyer l'environnement de test"
@@ -58,6 +61,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         -i|--integration)
             TEST_TYPE="integration"
+            shift
+            ;;
+        -p|--performance)
+            TEST_TYPE="performance"
             shift
             ;;
         -c|--coverage)
@@ -116,6 +123,7 @@ if [ "$DEV_MODE" = true ]; then
     echo -e "${YELLOW}Commands disponibles dans le container:${NC}"
     echo "  poetry run pytest tests/unit/           # Tests unitaires"
     echo "  poetry run pytest tests/integration/    # Tests d'intégration"
+    echo "  poetry run pytest tests/performance/    # Tests de performance"
     echo "  poetry run pytest --cov=src            # Tests avec couverture"
     echo "  poetry run coverage html               # Générer rapport HTML"
     echo "  exit                                    # Quitter"
@@ -137,6 +145,10 @@ case $TEST_TYPE in
     "integration")
         PYTEST_CMD="$PYTEST_CMD tests/integration/"
         echo -e "${BLUE}🔗 Exécution des tests d'intégration...${NC}"
+        ;;
+    "performance")
+        PYTEST_CMD="$PYTEST_CMD tests/performance/"
+        echo -e "${BLUE}⚡ Exécution des tests de performance...${NC}"
         ;;
     "all")
         PYTEST_CMD="$PYTEST_CMD tests/"
