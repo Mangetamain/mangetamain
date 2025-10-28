@@ -1,33 +1,20 @@
 services:
-  # Data volume service - pulls preprocessed data from Docker Hub
-  data-volume:
-    image: andranik777/mangetamain-data:latest
-    platform: linux/arm64
-    profiles: ["use-prebuilt"]
-    volumes:
-      - preprocessed_data:/shared_data
-    command: /bin/sh -c "cp -r /data/* /shared_data/ && echo 'Data volume ready' && tail -f /dev/null"
-    networks:
-      - app-network
-
-  # Service de preprocessing - only runs when rebuilding data
+  # Service de preprocessing automatique
   preprocessing:
     build: ./preprocessing
-    profiles: ["rebuild-data"]
     volumes:
       - ./preprocessing:/app
-      - kaggle_cache:/app/cache
-      - preprocessed_data:/shared_data
+      - ./data:/app/data
+      - shared_data:/shared_data  # Volume partagé pour les données preprocessées
     environment:
       - POETRY_CACHE_DIR=/tmp/poetry_cache
       - PYTHONPATH=/app
-      - KAGGLE_CONFIG_DIR=/app/.kaggle
     working_dir: /app
-    command: bash -c "poetry install && poetry run python pipeline.py && echo 'Preprocessing complete - data ready in /shared_data'"
+    command: bash -c "poetry install && poetry run python pipeline.py"  # Exécution automatique du pipeline complet
     networks:
       - app-network
 
-  # Service Streamlit production - SANS depends_on problématique
+  # Service Streamlit production
   streamlit-app:
     build: ./streamlit-poetry-docker
     ports:
@@ -35,53 +22,15 @@ services:
     volumes:
       - ./streamlit-poetry-docker:/app
       - ./preprocessing:/preprocessing
-      - preprocessed_data:/shared_data
-    environment:
-      - POETRY_CACHE_DIR=/tmp/poetry_cache
-      - PYTHONPATH=/app:/preprocessing
-    working_dir: /app
-    command: poetry run streamlit run app.py --server.address=0.0.0.0 --server.port=8501
-    # ✅ PAS DE depends_on - let it run independently
-    networks:
-      - app-network
-
-  # Service Streamlit avec dépendance data-volume (pour use-prebuilt)
-  streamlit-with-prebuilt:
-    build: ./streamlit-poetry-docker
-    profiles: ["use-prebuilt"]
-    ports:
-      - "8501:8501"
-    volumes:
-      - ./streamlit-poetry-docker:/app
-      - ./preprocessing:/preprocessing
-      - preprocessed_data:/shared_data
+      - ./data:/app/data
+      - shared_data:/shared_data  # Accès aux données preprocessées
     environment:
       - POETRY_CACHE_DIR=/tmp/poetry_cache
       - PYTHONPATH=/app:/preprocessing
     working_dir: /app
     command: poetry run streamlit run app.py --server.address=0.0.0.0 --server.port=8501
     depends_on:
-      - data-volume
-    networks:
-      - app-network
-
-  # Service Streamlit avec dépendance preprocessing (pour rebuild-data)
-  streamlit-with-rebuild:
-    build: ./streamlit-poetry-docker
-    profiles: ["rebuild-data"]
-    ports:
-      - "8501:8501"
-    volumes:
-      - ./streamlit-poetry-docker:/app
-      - ./preprocessing:/preprocessing
-      - preprocessed_data:/shared_data
-    environment:
-      - POETRY_CACHE_DIR=/tmp/poetry_cache
-      - PYTHONPATH=/app:/preprocessing
-    working_dir: /app
-    command: poetry run streamlit run app.py --server.address=0.0.0.0 --server.port=8501
-    depends_on:
-      - preprocessing
+      - preprocessing  # Attendre que le preprocessing soit terminé
     networks:
       - app-network
 
@@ -93,15 +42,18 @@ services:
       dockerfile: Dockerfile.test
     volumes:
       - ./streamlit-poetry-docker:/app
-      - ./tests:/app/tests
+      - ./tests:/app/tests  # Monter le dossier tests depuis la racine
       - ./preprocessing:/preprocessing
-      - preprocessed_data:/shared_data
-      - test_reports:/app/test-reports
+      - ./data:/app/data
+      - shared_data:/shared_data
+      - test_reports:/app/test-reports  # Volume pour les rapports de tests
     environment:
       - POETRY_CACHE_DIR=/tmp/poetry_cache
       - PYTHONPATH=/app:/preprocessing
     working_dir: /app
     command: poetry run pytest tests/ --cov=src --cov-report=html:/app/test-reports/htmlcov --cov-report=xml:/app/test-reports/coverage.xml --cov-report=term-missing
+    depends_on:
+      - preprocessing
     networks:
       - app-network
 
@@ -113,9 +65,10 @@ services:
       dockerfile: Dockerfile.test
     volumes:
       - ./streamlit-poetry-docker:/app
-      - ./tests:/app/tests
+      - ./tests:/app/tests  # Monter le dossier tests depuis la racine
       - ./preprocessing:/preprocessing
-      - preprocessed_data:/shared_data
+      - ./data:/app/data
+      - shared_data:/shared_data
       - test_reports:/app/test-reports
     environment:
       - POETRY_CACHE_DIR=/tmp/poetry_cache
@@ -124,13 +77,14 @@ services:
     command: bash
     stdin_open: true
     tty: true
+    depends_on:
+      - preprocessing
     networks:
       - app-network
 
 volumes:
-  preprocessed_data:
-  kaggle_cache:
-  test_reports:
+  shared_data:  # Volume partagé entre preprocessing et streamlit
+  test_reports:  # Volume pour les rapports de tests
 
 networks:
   app-network:

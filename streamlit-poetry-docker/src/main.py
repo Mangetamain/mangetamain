@@ -25,7 +25,7 @@ __version__ = "2.0.0"
 __all__ = [
     'MangeTaMainApp',
     'DataManager',
-    'RecommendationEngine', 
+    'RecommendationEngine',
     'UIComponents',
     'StyleManager',
     'DATA_PATHS',
