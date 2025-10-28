@@ -302,7 +302,7 @@ jobs:
         continue-on-error: false
 
       - name: Upload coverage reports
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: test-coverage-reports
           path: |
@@ -338,7 +338,7 @@ jobs:
 
       # Download coverage artifacts from integration tests
       - name: Download integration test coverage
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: test-coverage-reports
           path: ./integration-coverage/
@@ -548,7 +548,7 @@ jobs:
           find combined-docs -type f -name "*.html" | head -10
 
       - name: Upload documentation artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: documentation
           path: combined-docs/
