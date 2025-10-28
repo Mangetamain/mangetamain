@@ -256,16 +256,6 @@ docker-compose --profile testing logs tests
 ./run-tests.sh -u --verbose
 ```
 
-## 📋 Prochaines Étapes
 
-- [x] ~~Améliorer la couverture de code (objectif : 80%)~~ **✅ ACCOMPLI : 86% atteint !**
-- [x] ~~Ajouter des tests de performance~~ **✅ ACCOMPLI : Support via -p flag**
-- [x] ~~Intégration CI/CD avec GitHub Actions~~ **✅ ACCOMPLI : Workflows configurés**
-- [ ] Tests de régression automatisés
-- [ ] Tests end-to-end avec Selenium
-- [ ] Benchmarking des performances de recommandation
-- [ ] Tests de charge et de stress
-
----
 
 **💡 Conseil** : Utilisez toujours `./run-tests.sh -u` pour un test rapide avant de commiter vos changements !
