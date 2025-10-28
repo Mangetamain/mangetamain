@@ -269,16 +269,36 @@ jobs:
           # Install additional dependencies that might be needed
           pip install pyyaml requests matplotlib seaborn
 
-      - name: Set Python path and run tests
+      - name: Create conftest.py for path setup
         run: |
-          echo "🔧 Setting up Python path..."
-          export PYTHONPATH="${{ github.workspace }}/preprocessing:${{ github.workspace }}/streamlit-poetry-docker/src:$PYTHONPATH"
+          cat > tests/conftest.py << 'EOF'
+          import sys
+          import os
+          from pathlib import Path
           
-          echo "📂 Checking what's available..."
-          ls -la preprocessing/ || echo "No preprocessing dir"
-          ls -la streamlit-poetry-docker/src/ || echo "No src dir"
+          # Get the project root directory
+          project_root = Path(__file__).parent.parent
           
-          echo "🧪 Running tests..."
+          # Add preprocessing module to path
+          preprocessing_path = project_root / "preprocessing"
+          if preprocessing_path.exists():
+              sys.path.insert(0, str(preprocessing_path))
+              print(f"Added to path: {preprocessing_path}")
+          
+          # Add streamlit src module to path
+          streamlit_src_path = project_root / "streamlit-poetry-docker" / "src"
+          if streamlit_src_path.exists():
+              sys.path.insert(0, str(streamlit_src_path))
+              print(f"Added to path: {streamlit_src_path}")
+          else:
+              print(f"Warning: streamlit src path not found: {streamlit_src_path}")
+          
+          print("Python path configured for tests")
+          EOF
+
+      - name: Run integration tests with coverage
+        run: |
+          echo "🧪 Running integration tests..."
           pytest tests/ \
             --cov=preprocessing \
             --cov=streamlit-poetry-docker/src \
