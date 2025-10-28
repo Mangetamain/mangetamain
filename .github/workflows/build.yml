@@ -337,13 +337,14 @@ jobs:
       - name: Add Poetry to PATH
         run: echo "$HOME/.local/bin" >> $GITHUB_PATH
 
-      # Download coverage artifacts from integration tests
+      # Try to download coverage artifacts from integration tests (optional)
       - name: Download integration test coverage
         uses: actions/download-artifact@v4
         with:
           name: test-coverage-reports
           path: ./integration-coverage/
         continue-on-error: true
+        if: always()
 
       - name: Cache preprocessing dependencies
         uses: actions/cache@v3
