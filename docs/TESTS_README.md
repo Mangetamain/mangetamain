@@ -256,6 +256,3 @@ docker-compose --profile testing logs tests
 ./run-tests.sh -u --verbose
 ```
 
-
-
-**💡 Conseil** : Utilisez toujours `./run-tests.sh -u` pour un test rapide avant de commiter vos changements !
