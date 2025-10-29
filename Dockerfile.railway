@@ -1,0 +1,79 @@
+# ========================================
+# DOCKERFILE OPTIMISÉ POUR RAILWAY DEPLOYMENT
+# ========================================
+# Ce Dockerfile est spécialement conçu pour le déploiement sur Railway.
+# Pour le développement local, utilisez docker-compose.yml
+# 
+# Caractéristiques Railway :
+# - Multi-stage build avec données depuis Docker Hub
+# - Port 8080 (Railway override automatiquement avec $PORT)
+# - Utilisateur non-root pour la sécurité
+# - Script de démarrage avec healthcheck
+# - Gestion automatique des variables d'environnement Railway
+# ========================================
+
+# Multi-stage build pour copier les données depuis Docker Hub
+# Stage 1: Copier les données depuis votre image Docker Hub
+FROM andranik777/mangetamain-data:latest AS data-source
+
+# Stage 2: Application principale Railway
+FROM python:3.11-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    POETRY_VERSION=1.8.3 \
+    POETRY_VIRTUALENVS_CREATE=false \
+    POETRY_HOME=/opt/poetry \
+    PATH="/opt/poetry/bin:$PATH"
+
+# System deps
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl build-essential \
+ && rm -rf /var/lib/apt/lists/*
+
+# Install Poetry
+RUN curl -sSL https://install.python-poetry.org | python3 -
+
+WORKDIR /app
+
+# Copy dependency files from streamlit-poetry-docker
+COPY streamlit-poetry-docker/pyproject.toml streamlit-poetry-docker/poetry.lock* ./
+
+# Install dependencies
+RUN poetry install --no-interaction --no-ansi --no-root
+
+# Copy app code from streamlit-poetry-docker
+COPY streamlit-poetry-docker/ .
+
+# IMPORTANT: Copier les données depuis la première stage (Docker Hub image)
+COPY --from=data-source /data/ ./data/
+
+# ========================================
+# CONFIGURATION RAILWAY DEPLOYMENT
+# ========================================
+# Création utilisateur non-root et script de démarrage optimisé Railway
+RUN useradd -m appuser && \
+    echo '#!/bin/bash\n\
+set -e\n\
+echo "🔄 Checking for preprocessed data..."\n\
+if [ -f "/app/data/recipes_processed.pkl" ] && [ -f "/app/data/interactions.pkl" ]; then\n\
+  echo "✅ Preprocessed data found! Starting app..."\n\
+else\n\
+  echo "❌ Preprocessed data missing!"\n\
+  ls -la /app/data/\n\
+  exit 1\n\
+fi\n\
+echo "🚀 Starting Streamlit on port ${PORT}..."\n\
+exec streamlit run app.py --server.address=0.0.0.0 --server.port=${PORT} --server.maxUploadSize=50 --browser.gatherUsageStats=false --logger.level=info' > /app/start.sh && \
+    chmod +x /app/start.sh && \
+    chown -R appuser:appuser /app
+
+# Switch to non-root user (Railway security requirement)
+USER appuser
+
+# Railway automatically sets PORT variable, default 8080 for fallback
+ENV PORT=8080
+EXPOSE $PORT
+
+# Start script with Railway-compatible configuration
+CMD ["/app/start.sh"]

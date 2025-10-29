@@ -1,0 +1,40 @@
+# Railway ignore - exclude unnecessary files from deployment
+
+# Documentation
+docs/
+README.md
+*.md
+
+# Tests
+tests/
+test-reports/
+.pytest_cache/
+.coverage
+
+# Development files
+.git/
+.gitignore
+.vscode/
+.idea/
+
+# Local data (use preprocessed data from Docker Hub instead)
+data/
+preprocessing/
+
+# Cache and temporary files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+.cache/
+*.log
+
+# Docker development files
+docker-compose.yml
+Dockerfile.test
+run-tests.sh
+
+# OS files
+.DS_Store
+Thumbs.db

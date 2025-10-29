@@ -2,6 +2,16 @@
 
 A Streamlit-based recipe recommendation system with Docker containerization and preprocessed data distribution via Docker Hub.
 
+## 🌟 Live Demo
+
+**Try the application now!**
+
+[![🚀 Live Demo](https://img.shields.io/badge/🚀%20Live%20Demo-Try%20Now-brightgreen?style=for-the-badge)](https://mangetamain-production.up.railway.app/)
+
+Click the button above to access the live application deployed on Railway.
+
+---
+
 ## 🚀 Quick Start
 
 ### Option 1: Use Prebuilt Data (Recommended)
@@ -36,6 +46,16 @@ docker-compose down
 
 ## 🐳 Docker Hub
 Preprocessed data is available at: `andranik777/mangetamain-data:latest`
+
+
+### Railway Configuration
+- ✅ **Dedicated Dockerfile**: `Dockerfile.railway` optimized specifically for Railway
+- ✅ **Multi-stage build**: Integrates preprocessed data from Docker Hub
+- ✅ **Automatic port configuration**: Railway sets `$PORT` variable automatically
+- ✅ **Security**: Non-root user and proper healthchecks
+- ✅ **Memory optimized**: Streamlit settings tuned for Railway environment
+
+**Note**: `Dockerfile.railway` is Railway-specific. For local development, use `docker-compose.yml`.
 
 ## 📖 Documentation
 - [Docker Volume Usage](docs/DOCKER_VOLUME_USAGE.md) - Detailed volume management

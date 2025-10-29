@@ -31,5 +31,7 @@ COPY . .
 RUN useradd -m appuser && chown -R appuser:appuser /app
 USER appuser
 
-EXPOSE 8501
-CMD ["poetry", "run", "streamlit", "run", "app.py", "--server.address=0.0.0.0", "--server.port=8501"]
+# Use PORT environment variable for Railway compatibility
+ENV PORT=8501
+EXPOSE $PORT
+CMD ["poetry", "run", "streamlit", "run", "app.py", "--server.address=0.0.0.0", "--server.port=${PORT}", "--server.maxUploadSize=50", "--browser.gatherUsageStats=false"]

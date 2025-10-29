@@ -1,12 +1,22 @@
 """
 Configuration générale de l'application MangeTaMain
 """
+import os
 
-# Chemins des données
-DATA_PATHS = {
-    "recipes": "/shared_data/recipes_processed.pkl",
-    "interactions": "/shared_data/interactions.pkl"
-}
+# Détection de l'environnement Railway
+IS_RAILWAY = os.getenv('RAILWAY_ENVIRONMENT') is not None
+
+# Chemins des données adaptés à l'environnement
+if IS_RAILWAY:
+    DATA_PATHS = {
+        "recipes": "/app/data/recipes_processed.pkl",
+        "interactions": "/app/data/interactions.pkl"
+    }
+else:
+    DATA_PATHS = {
+        "recipes": "/shared_data/recipes_processed.pkl",
+        "interactions": "/shared_data/interactions.pkl"
+    }
 
 # Configuration du cache Streamlit
 CACHE_CONFIG = {

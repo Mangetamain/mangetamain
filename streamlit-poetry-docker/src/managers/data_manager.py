@@ -6,14 +6,15 @@ import streamlit as st
 import pandas as pd
 import os
 from typing import Optional, Tuple
+from ..utils.config import DATA_PATHS
 
 
 class DataManager:
     """Gestionnaire des données de l'application"""
 
     def __init__(self):
-        self.recipes_path = "/shared_data/recipes_processed.pkl"
-        self.interactions_path = "/shared_data/interactions.pkl"
+        self.recipes_path = DATA_PATHS["recipes"]
+        self.interactions_path = DATA_PATHS["interactions"]
 
     @st.cache_data(ttl=3600, show_spinner=False)
     def load_preprocessed_data(_self) -> Tuple[Optional[pd.DataFrame], Optional[pd.DataFrame]]:

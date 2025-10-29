@@ -2,7 +2,7 @@ services:
   # Data volume service - pulls preprocessed data from Docker Hub
   data-volume:
     image: andranik777/mangetamain-data:latest
-    platform: linux/arm64  # Support Apple Silicon
+    # platform: linux/arm64  # Auto-detect platform (now supports both ARM64 and AMD64)
     profiles: ["use-prebuilt"]
     volumes:
       - preprocessed_data:/shared_data
