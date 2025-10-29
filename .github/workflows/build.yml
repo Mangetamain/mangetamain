@@ -593,10 +593,10 @@ jobs:
         run: |
           echo "Starting deployment to Railway..."
           
-          # Authenticate with Railway using environment variable
-          railway login
+          # Set Railway token for authentication
+          export RAILWAY_TOKEN="${{ secrets.RAILWAY_TOKEN }}"
           
-          # Link to existing Railway project
+          # Link to existing Railway project using token
           railway link ${{ secrets.RAILWAY_PROJECT_ID }}
           
           # Deploy using the Railway Dockerfile configuration
@@ -610,6 +610,9 @@ jobs:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
           echo "Waiting for deployment to complete..."
+          
+          # Set Railway token for authentication
+          export RAILWAY_TOKEN="${{ secrets.RAILWAY_TOKEN }}"
           
           # Wait for deployment to be ready (max 5 minutes)
           timeout=300
