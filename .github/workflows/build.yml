@@ -597,7 +597,7 @@ jobs:
           export RAILWAY_TOKEN="${{ secrets.RAILWAY_TOKEN }}"
           
           # Link to existing Railway project using token
-          railway link ${{ secrets.RAILWAY_PROJECT_ID }}
+          railway link --project ${{ secrets.RAILWAY_PROJECT_ID }}
           
           # Deploy using the Railway Dockerfile configuration
           # Railway will build the image using Dockerfile.railway
