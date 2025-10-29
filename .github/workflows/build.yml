@@ -593,14 +593,14 @@ jobs:
         run: |
           echo "Starting deployment to Railway..."
           
+          # Update railway.json with the project ID
+          jq --arg projectId "${{ secrets.RAILWAY_PROJECT_ID }}" '.projectId = $projectId' railway.json > railway.json.tmp
+          mv railway.json.tmp railway.json
+          
           # Set Railway token for authentication
           export RAILWAY_TOKEN="${{ secrets.RAILWAY_TOKEN }}"
           
-          # Link to existing Railway project using token
-          railway link --project ${{ secrets.RAILWAY_PROJECT_ID }}
-          
           # Deploy using the Railway Dockerfile configuration
-          # Railway will build the image using Dockerfile.railway
           railway up --detach
           
           echo "Deployment initiated successfully!"
