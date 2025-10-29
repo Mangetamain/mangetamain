@@ -566,3 +566,34 @@ jobs:
           github_token: ${{ secrets.REPO_TOKEN }}
           publish_dir: ./combined-docs
           force_orphan: true
+
+
+
+  # ============================================
+  # JOB 7: DEPLOY TO RAILWAY
+  # ============================================
+  deploy-railway:
+    name: Deploy to Railway
+    runs-on: ubuntu-latest
+    container: ghcr.io/railwayapp/cli:latest
+    #needs: [build-documentation]  # Commented out to run independently
+    #if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    env:
+      RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+      SERVICE_ID: 9a99f86b-a156-4cf4-9d01-3cfa4276aca3
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to Railway
+        uses: bervProject/railway-deploy@main
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        with:
+          service: ${{ env.SERVICE_ID }}
+          detach: true
+        
+
+
