@@ -587,22 +587,29 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: List Railway Services
+      - name: Setup Railway Authentication
         run: |
-          echo "Discovering Railway services..."
-          railway status || echo "Status command failed, continuing..."
-          railway service || echo "Service command failed, continuing..."
+          echo "Setting up Railway authentication..."
+          
+          # Create Railway config directory
+          mkdir -p ~/.config/railway
+          
+          # Create config file with token
+          cat > ~/.config/railway/config.json << EOF
+          {
+            "token": "${{ secrets.RAILWAY_TOKEN }}"
+          }
+          EOF
+          
+          echo "Railway config created"
           
       - name: Deploy to Railway
         run: |
           echo "Deploying to Railway..."
-          if [ -n "${{ env.SERVICE_ID }}" ]; then
-            echo "Using Service ID: ${{ env.SERVICE_ID }}"
-            railway up --service=${{ env.SERVICE_ID }} --detach
-          else
-            echo "No SERVICE_ID provided, deploying to current service..."
-            railway up --detach
-          fi
+          echo "Using Service ID: ${{ env.SERVICE_ID }}"
+          
+          # Deploy with explicit service ID
+          railway up --service=${{ env.SERVICE_ID }} --detach
 
 
 
