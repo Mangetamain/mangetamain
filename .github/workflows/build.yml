@@ -603,13 +603,14 @@ jobs:
           # Make sure it's executable
           chmod +x "${RAILWAY_BIN}" 2>/dev/null || true
           
-          # Login with token
-          echo "${{ secrets.RAILWAY_TOKEN }}" | ${RAILWAY_BIN} login --token
+          # Create Railway config directory and set token
+          mkdir -p ~/.config/railway
+          echo '{"token":"${{ secrets.RAILWAY_TOKEN }}"}' > ~/.config/railway/config.json
           
           # Link to project (assuming project is already created)
-          ${RAILWAY_BIN} link --project mangetamain
+          ${RAILWAY_BIN} link --project mangetamain || true
           
-          # Deploy
+          # Deploy (the token will be read from config)
           ${RAILWAY_BIN} up --detach
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
