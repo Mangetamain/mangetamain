@@ -570,163 +570,39 @@ jobs:
 
 
   # ============================================
-  # JOB 7: DEPLOY TO RAILWAY VIA API
+  # JOB 7: DEPLOY TO RAILWAY
   # ============================================
   deploy-railway:
-    name: Deploy to Railway via API
+    name: Deploy to Railway
     runs-on: ubuntu-latest
+    container: ghcr.io/railwayapp/cli:latest
     #needs: [build-documentation]  # Commented out to run independently
     #if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    env:
+      RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+      SERVICE_ID: 9a99f86b-a156-4cf4-9d01-3cfa4276aca3
     
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Get Railway Project Info
-        id: railway-info
+      - name: List Railway Services
         run: |
-          # Use project ID from secrets and get environment/service info
-          PROJECT_ID="${{ secrets.RAILWAY_PROJECT_ID }}"
-          echo "PROJECT_ID=$PROJECT_ID" >> $GITHUB_OUTPUT
+          echo "Discovering Railway services..."
+          railway status || echo "Status command failed, continuing..."
+          railway service || echo "Service command failed, continuing..."
           
-          # Get project details using Railway GraphQL API with API token
-          RESPONSE=$(curl -s -X POST \
-            -H "Authorization: Bearer ${{ secrets.RAILWAY_API_TOKEN }}" \
-            -H "Content-Type: application/json" \
-            -d '{
-              "query": "query($projectId: String!) { project(id: $projectId) { environments { edges { node { id name } } } services { edges { node { id name } } } } }",
-              "variables": { "projectId": "'$PROJECT_ID'" }
-            }' \
-            https://backboard.railway.app/graphql)
-          
-          echo "Railway API Response:"
-          echo "$RESPONSE"
-          
-          # Check if response is valid JSON
-          if ! echo "$RESPONSE" | jq empty 2>/dev/null; then
-            echo "❌ Invalid JSON response from Railway API"
-            echo "Raw response: $RESPONSE"
-            exit 1
-          fi
-          
-          # Extract production environment ID
-          ENV_ID=$(echo "$RESPONSE" | jq -r '.data.project.environments.edges[] | select(.node.name == "production") | .node.id' 2>/dev/null || echo "")
-          if [ -z "$ENV_ID" ]; then
-            echo "❌ Could not find production environment ID"
-            echo "Available environments:"
-            echo "$RESPONSE" | jq -r '.data.project.environments.edges[].node | "\(.name): \(.id)"' 2>/dev/null || echo "Failed to parse environments"
-            exit 1
-          fi
-          echo "ENV_ID=$ENV_ID" >> $GITHUB_OUTPUT
-          
-          # Extract service ID (first service)
-          SERVICE_ID=$(echo "$RESPONSE" | jq -r '.data.project.services.edges[0].node.id' 2>/dev/null || echo "")
-          if [ -z "$SERVICE_ID" ]; then
-            echo "❌ Could not find service ID"
-            echo "Available services:"
-            echo "$RESPONSE" | jq -r '.data.project.services.edges[].node | "\(.name): \(.id)"' 2>/dev/null || echo "Failed to parse services"
-            exit 1
-          fi
-          echo "SERVICE_ID=$SERVICE_ID" >> $GITHUB_OUTPUT
-
-      - name: Trigger Railway Deployment
+      - name: Deploy to Railway
         run: |
-          echo "Triggering deployment with:"
-          echo "Project ID: ${{ steps.railway-info.outputs.PROJECT_ID }}"
-          echo "Environment ID: ${{ steps.railway-info.outputs.ENV_ID }}"
-          echo "Service ID: ${{ steps.railway-info.outputs.SERVICE_ID }}"
-          
-          # Trigger deployment using GraphQL mutation with API token
-          DEPLOY_RESPONSE=$(curl -s -X POST \
-            -H "Authorization: Bearer ${{ secrets.RAILWAY_API_TOKEN }}" \
-            -H "Content-Type: application/json" \
-            -d '{
-              "query": "mutation deploymentCreate($input: DeploymentCreateInput!) { deploymentCreate(input: $input) { id url status } }",
-              "variables": {
-                "input": {
-                  "environmentId": "${{ steps.railway-info.outputs.ENV_ID }}",
-                  "serviceId": "${{ steps.railway-info.outputs.SERVICE_ID }}",
-                  "meta": {
-                    "branch": "${{ github.ref_name }}",
-                    "commitSha": "${{ github.sha }}",
-                    "repo": "${{ github.repository }}"
-                  }
-                }
-              }
-            }' \
-            https://backboard.railway.app/graphql)
-          
-          echo "Deployment Response:"
-          echo "$DEPLOY_RESPONSE" | jq '.'
-          
-          # Extract deployment ID and URL
-          DEPLOYMENT_ID=$(echo "$DEPLOY_RESPONSE" | jq -r '.data.deploymentCreate.id')
-          DEPLOYMENT_URL=$(echo "$DEPLOY_RESPONSE" | jq -r '.data.deploymentCreate.url')
-          
-          echo "✅ Deployment initiated!"
-          echo "Deployment ID: $DEPLOYMENT_ID"
-          echo "Deployment URL: $DEPLOYMENT_URL"
-        env:
-          RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
-
-      - name: Wait for deployment
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        run: |
-          echo "Waiting for deployment to complete..."
-          
-          # Set Railway token for authentication
-          export RAILWAY_TOKEN="${{ secrets.RAILWAY_TOKEN }}"
-          
-          # Wait for deployment to be ready (max 5 minutes)
-          timeout=300
-          elapsed=0
-          
-          while [ $elapsed -lt $timeout ]; do
-            if railway status | grep -q "RUNNING"; then
-              echo "Deployment completed successfully!"
-              break
-            fi
-            
-            echo "Still deploying... ($elapsed/$timeout seconds)"
-            sleep 20
-            elapsed=$((elapsed + 20))
-          done
-          
-          if [ $elapsed -ge $timeout ]; then
-            echo "Deployment timeout after $timeout seconds"
-            railway status
-            exit 1
+          echo "Deploying to Railway..."
+          if [ -n "${{ env.SERVICE_ID }}" ]; then
+            echo "Using Service ID: ${{ env.SERVICE_ID }}"
+            railway up --service=${{ env.SERVICE_ID }} --detach
+          else
+            echo "No SERVICE_ID provided, deploying to current service..."
+            railway up --detach
           fi
 
-      - name: Health check
-        run: |
-          echo "Performing health check..."
-          
-          # Wait a bit for Railway to fully start the service
-          sleep 30
-          
-          # Health check with retry logic
-          max_attempts=6
-          attempt=0
-          
-          while [ $attempt -lt $max_attempts ]; do
-            attempt=$((attempt + 1))
-            
-            echo "Health check attempt $attempt/$max_attempts"
-            
-            if curl -f -s --max-time 30 "${{ secrets.RAILWAY_APP_URL }}/_stcore/health" > /dev/null; then
-              echo "Health check passed! App is healthy."
-              break
-            fi
-            
-            if [ $attempt -eq $max_attempts ]; then
-              echo "Health check failed after $max_attempts attempts"
-              echo "Try accessing manually: ${{ secrets.RAILWAY_APP_URL }}"
-              exit 1
-            fi
-            
-            echo "Health check failed, retrying in 20 seconds..."
-            sleep 20
-          done
+
 
