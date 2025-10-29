@@ -593,6 +593,9 @@ jobs:
           # Add Railway to PATH manually
           export PATH="$HOME/.railway/bin:$PATH"
           
+          # Set Railway token environment variable
+          export RAILWAY_TOKEN="${{ secrets.RAILWAY_TOKEN }}"
+          
           # Find Railway binary
           RAILWAY_BIN=$(which railway 2>/dev/null || find $HOME -name railway -type f 2>/dev/null | head -1)
           echo "Railway binary found at: ${RAILWAY_BIN}"
@@ -600,11 +603,11 @@ jobs:
           # Make sure it's executable
           chmod +x "${RAILWAY_BIN}" 2>/dev/null || true
           
-          # Verify installation
-          ${RAILWAY_BIN} --help | head -5
+          # Login with token
+          echo "${{ secrets.RAILWAY_TOKEN }}" | ${RAILWAY_BIN} login --token
           
-          # Login using token (set environment variable)
-          export RAILWAY_TOKEN="${{ secrets.RAILWAY_TOKEN }}"
+          # Link to project (assuming project is already created)
+          ${RAILWAY_BIN} link --project mangetamain
           
           # Deploy
           ${RAILWAY_BIN} up --detach
