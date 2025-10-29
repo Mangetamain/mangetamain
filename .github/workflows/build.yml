@@ -591,10 +591,10 @@ jobs:
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
-          echo " Starting deployment to Railway..."
+          echo "Starting deployment to Railway..."
           
-          # Verify Railway token
-          railway login --token $RAILWAY_TOKEN
+          # Authenticate with Railway using environment variable
+          railway login
           
           # Link to existing Railway project
           railway link ${{ secrets.RAILWAY_PROJECT_ID }}
