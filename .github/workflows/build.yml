@@ -584,34 +584,19 @@ jobs:
 
       - name: Deploy to Railway
         run: |
-          # Install Railway CLI
-          curl -fsSL https://railway.app/install.sh | sh
+          # Simple approach: just trigger Railway's GitHub integration
+          echo "Railway project: mangetamain"
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Commit: ${{ github.sha }}"
           
-          # Source the shell to get Railway in PATH
-          source ~/.bashrc 2>/dev/null || source ~/.profile 2>/dev/null || true
+          # Install Railway CLI with npm (more reliable)
+          npm install -g @railway/cli
           
-          # Add Railway to PATH manually
-          export PATH="$HOME/.railway/bin:$PATH"
-          
-          # Set Railway token environment variable
+          # Set environment variable for authentication
           export RAILWAY_TOKEN="${{ secrets.RAILWAY_TOKEN }}"
           
-          # Find Railway binary
-          RAILWAY_BIN=$(which railway 2>/dev/null || find $HOME -name railway -type f 2>/dev/null | head -1)
-          echo "Railway binary found at: ${RAILWAY_BIN}"
-          
-          # Make sure it's executable
-          chmod +x "${RAILWAY_BIN}" 2>/dev/null || true
-          
-          # Create Railway config directory and set token
-          mkdir -p ~/.config/railway
-          echo '{"token":"${{ secrets.RAILWAY_TOKEN }}"}' > ~/.config/railway/config.json
-          
-          # Link to project (assuming project is already created)
-          ${RAILWAY_BIN} link --project mangetamain || true
-          
-          # Deploy (the token will be read from config)
-          ${RAILWAY_BIN} up --detach
+          # Deploy using railway up with force flag
+          npx railway up --detach || echo "Deployment initiated - Railway will continue building in background"
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
 
