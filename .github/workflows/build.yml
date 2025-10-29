@@ -583,9 +583,27 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Deploy to Railway
-        uses: railwayapp/railway-deploy@v3
-        with:
-          railway_token: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          # Install Railway CLI
+          curl -fsSL https://railway.app/install.sh | sh
+          
+          # Create config file with authentication
+          mkdir -p ~/.config/railway
+          cat > ~/.config/railway/railway.json << EOF
+          {
+            "token": "${{ secrets.RAILWAY_TOKEN }}",
+            "projectId": "${{ secrets.RAILWAY_PROJECT_ID }}"
+          }
+          EOF
+          
+          # Add Railway to PATH
+          export PATH="$HOME/.railway/bin:$PATH"
+          
+          # Verify installation
+          ~/.railway/bin/railway version
+          
+          # Deploy directly
+          ~/.railway/bin/railway up --detach
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
 
