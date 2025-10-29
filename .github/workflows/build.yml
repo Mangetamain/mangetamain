@@ -601,18 +601,23 @@ jobs:
           
           echo "Token available: ${RAILWAY_TOKEN:0:10}..."
           
-          # Update railway.json with the project ID
-          jq --arg projectId "${{ secrets.RAILWAY_PROJECT_ID }}" '.projectId = $projectId' railway.json > railway.json.tmp
-          mv railway.json.tmp railway.json
+          # Verify Railway CLI installation
+          railway --version
           
-          echo "Updated railway.json:"
-          cat railway.json
+          # Authenticate using token (pipe method for non-interactive)
+          echo "Authenticating with Railway..."
+          echo "$RAILWAY_TOKEN" | railway login
           
-          # Ensure Railway CLI uses the token
-          export RAILWAY_TOKEN="$RAILWAY_TOKEN"
+          # Link to existing Railway project
+          echo "Linking to Railway project..."
+          railway link "${{ secrets.RAILWAY_PROJECT_ID }}"
+          
+          # Verify we're connected
+          railway status
           
           # Deploy using the Railway Dockerfile configuration
-          RAILWAY_TOKEN=$RAILWAY_TOKEN  railway up --detach
+          echo "Starting deployment..."
+          railway up --detach
           
           echo "Deployment initiated successfully!"
 
