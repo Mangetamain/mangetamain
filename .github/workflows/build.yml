@@ -593,12 +593,23 @@ jobs:
         run: |
           echo "Starting deployment to Railway..."
           
+          # Verify token is available
+          if [ -z "$RAILWAY_TOKEN" ]; then
+            echo "ERROR: RAILWAY_TOKEN is not set"
+            exit 1
+          fi
+          
+          echo "Token available: ${RAILWAY_TOKEN:0:10}..."
+          
           # Update railway.json with the project ID
           jq --arg projectId "${{ secrets.RAILWAY_PROJECT_ID }}" '.projectId = $projectId' railway.json > railway.json.tmp
           mv railway.json.tmp railway.json
           
-          # Set Railway token for authentication
-          export RAILWAY_TOKEN="${{ secrets.RAILWAY_TOKEN }}"
+          echo "Updated railway.json:"
+          cat railway.json
+          
+          # Ensure Railway CLI uses the token
+          export RAILWAY_TOKEN="$RAILWAY_TOKEN"
           
           # Deploy using the Railway Dockerfile configuration
           railway up --detach
