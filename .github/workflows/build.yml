@@ -607,9 +607,9 @@ jobs:
           # Railway CLI automatically uses RAILWAY_TOKEN env var for authentication
           # No need for explicit login in CI/CD - just link and deploy
           
-          # Link to existing Railway project
+          # Link to existing Railway project using the correct flag
           echo "Linking to Railway project..."
-          railway link "${{ secrets.RAILWAY_PROJECT_ID }}"
+          railway link --project "${{ secrets.RAILWAY_PROJECT_ID }}"
           
           # Verify we're connected
           echo "Checking connection status..."
