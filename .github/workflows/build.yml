@@ -587,23 +587,27 @@ jobs:
           # Install Railway CLI
           curl -fsSL https://railway.app/install.sh | sh
           
-          # Create config file with authentication
-          mkdir -p ~/.config/railway
-          cat > ~/.config/railway/railway.json << EOF
-          {
-            "token": "${{ secrets.RAILWAY_TOKEN }}",
-            "projectId": "${{ secrets.RAILWAY_PROJECT_ID }}"
-          }
-          EOF
+          # Source the shell to get Railway in PATH
+          source ~/.bashrc 2>/dev/null || source ~/.profile 2>/dev/null || true
           
-          # Add Railway to PATH
+          # Add Railway to PATH manually
           export PATH="$HOME/.railway/bin:$PATH"
           
-          # Verify installation
-          ~/.railway/bin/railway version
+          # Find Railway binary
+          RAILWAY_BIN=$(which railway 2>/dev/null || find $HOME -name railway -type f 2>/dev/null | head -1)
+          echo "Railway binary found at: ${RAILWAY_BIN}"
           
-          # Deploy directly
-          ~/.railway/bin/railway up --detach
+          # Make sure it's executable
+          chmod +x "${RAILWAY_BIN}" 2>/dev/null || true
+          
+          # Verify installation
+          ${RAILWAY_BIN} version
+          
+          # Login using token
+          echo "${{ secrets.RAILWAY_TOKEN }}" | ${RAILWAY_BIN} login
+          
+          # Deploy
+          ${RAILWAY_BIN} up --detach
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
 
