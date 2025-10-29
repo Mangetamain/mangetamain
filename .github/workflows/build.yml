@@ -604,20 +604,24 @@ jobs:
           # Verify Railway CLI installation
           railway --version
           
-          # Railway CLI automatically uses RAILWAY_TOKEN env var for authentication
-          # No need for explicit login in CI/CD - just link and deploy
+          # Create Railway config directory and save token
+          mkdir -p ~/.railway
+          echo "$RAILWAY_TOKEN" > ~/.railway/token
+          
+          # Alternative: Export token explicitly for all commands
+          export RAILWAY_TOKEN="$RAILWAY_TOKEN"
           
           # Link to existing Railway project using the correct flag
           echo "Linking to Railway project..."
-          railway link --project "${{ secrets.RAILWAY_PROJECT_ID }}"
+          RAILWAY_TOKEN="$RAILWAY_TOKEN" railway link --project "${{ secrets.RAILWAY_PROJECT_ID }}"
           
           # Verify we're connected
           echo "Checking connection status..."
-          railway status
+          RAILWAY_TOKEN="$RAILWAY_TOKEN" railway status
           
           # Deploy using the Railway Dockerfile configuration
           echo "Starting deployment..."
-          railway up --detach
+          RAILWAY_TOKEN="$RAILWAY_TOKEN" railway up --detach
           
           echo "Deployment initiated successfully!"
 
