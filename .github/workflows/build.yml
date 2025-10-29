@@ -600,14 +600,33 @@ jobs:
             https://backboard.railway.app/graphql)
           
           echo "Railway API Response:"
-          echo "$RESPONSE" | jq '.'
+          echo "$RESPONSE"
+          
+          # Check if response is valid JSON
+          if ! echo "$RESPONSE" | jq empty 2>/dev/null; then
+            echo "❌ Invalid JSON response from Railway API"
+            echo "Raw response: $RESPONSE"
+            exit 1
+          fi
           
           # Extract production environment ID
-          ENV_ID=$(echo "$RESPONSE" | jq -r '.data.project.environments.edges[] | select(.node.name == "production") | .node.id')
+          ENV_ID=$(echo "$RESPONSE" | jq -r '.data.project.environments.edges[] | select(.node.name == "production") | .node.id' 2>/dev/null || echo "")
+          if [ -z "$ENV_ID" ]; then
+            echo "❌ Could not find production environment ID"
+            echo "Available environments:"
+            echo "$RESPONSE" | jq -r '.data.project.environments.edges[].node | "\(.name): \(.id)"' 2>/dev/null || echo "Failed to parse environments"
+            exit 1
+          fi
           echo "ENV_ID=$ENV_ID" >> $GITHUB_OUTPUT
           
           # Extract service ID (first service)
-          SERVICE_ID=$(echo "$RESPONSE" | jq -r '.data.project.services.edges[0].node.id')
+          SERVICE_ID=$(echo "$RESPONSE" | jq -r '.data.project.services.edges[0].node.id' 2>/dev/null || echo "")
+          if [ -z "$SERVICE_ID" ]; then
+            echo "❌ Could not find service ID"
+            echo "Available services:"
+            echo "$RESPONSE" | jq -r '.data.project.services.edges[].node | "\(.name): \(.id)"' 2>/dev/null || echo "Failed to parse services"
+            exit 1
+          fi
           echo "SERVICE_ID=$SERVICE_ID" >> $GITHUB_OUTPUT
 
       - name: Trigger Railway Deployment
