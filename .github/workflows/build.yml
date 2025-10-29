@@ -587,29 +587,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Railway Authentication
-        run: |
-          echo "Setting up Railway authentication..."
-          
-          # Create Railway config directory
-          mkdir -p ~/.config/railway
-          
-          # Create config file with token
-          cat > ~/.config/railway/config.json << EOF
-          {
-            "token": "${{ secrets.RAILWAY_TOKEN }}"
-          }
-          EOF
-          
-          echo "Railway config created"
-          
       - name: Deploy to Railway
-        run: |
-          echo "Deploying to Railway..."
-          echo "Using Service ID: ${{ env.SERVICE_ID }}"
-          
-          # Deploy with explicit service ID
-          railway up --service=${{ env.SERVICE_ID }} --detach
-
+        uses: bervProject/railway-deploy@main
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        with:
+          service: ${{ env.SERVICE_ID }}
+          detach: true
+        
 
 
