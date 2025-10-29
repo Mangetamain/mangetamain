@@ -604,15 +604,15 @@ jobs:
           # Verify Railway CLI installation
           railway --version
           
-          # Authenticate using token (pipe method for non-interactive)
-          echo "Authenticating with Railway..."
-          echo "$RAILWAY_TOKEN" | railway login
+          # Railway CLI automatically uses RAILWAY_TOKEN env var for authentication
+          # No need for explicit login in CI/CD - just link and deploy
           
           # Link to existing Railway project
           echo "Linking to Railway project..."
           railway link "${{ secrets.RAILWAY_PROJECT_ID }}"
           
           # Verify we're connected
+          echo "Checking connection status..."
           railway status
           
           # Deploy using the Railway Dockerfile configuration
