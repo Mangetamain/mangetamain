@@ -55,15 +55,15 @@ COPY --from=data-source /data/ ./data/
 RUN useradd -m appuser && \
     echo '#!/bin/bash\n\
 set -e\n\
-echo "🔄 Checking for preprocessed data..."\n\
+echo " Checking for preprocessed data..."\n\
 if [ -f "/app/data/recipes_processed.pkl" ] && [ -f "/app/data/interactions.pkl" ]; then\n\
-  echo "✅ Preprocessed data found! Starting app..."\n\
+  echo " Preprocessed data found! Starting app..."\n\
 else\n\
-  echo "❌ Preprocessed data missing!"\n\
+  echo " Preprocessed data missing!"\n\
   ls -la /app/data/\n\
   exit 1\n\
 fi\n\
-echo "🚀 Starting Streamlit on port ${PORT}..."\n\
+echo " Starting Streamlit on port ${PORT}..."\n\
 exec streamlit run app.py --server.address=0.0.0.0 --server.port=${PORT} --server.maxUploadSize=50 --browser.gatherUsageStats=false --logger.level=info' > /app/start.sh && \
     chmod +x /app/start.sh && \
     chown -R appuser:appuser /app

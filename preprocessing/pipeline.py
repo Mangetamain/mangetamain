@@ -37,11 +37,11 @@ def process_chunk(chunk_data):
         preprocessor = RecipePreprocessor()
         processed = preprocessor.preprocess_dataframe(chunk)
 
-        logger.info(f"✅ Chunk {chunk_id}: {len(processed)} recettes traitées")
+        logger.info(f" Chunk {chunk_id}: {len(processed)} recettes traitées")
         return processed
 
     except Exception as e:
-        logger.error(f"❌ Erreur chunk {chunk_id}: {e}")
+        logger.error(f" Erreur chunk {chunk_id}: {e}")
         return pd.DataFrame()
 
 
@@ -51,11 +51,11 @@ def run_complete_preprocessing():
     Résultat directement utilisable par Streamlit
     """
 
-    logger.info("🚀 PREPROCESSING COMPLET - MANGETAMAIN")
+    logger.info(" PREPROCESSING COMPLET - MANGETAMAIN")
     start_time = datetime.now()
 
     # === ÉTAPE 1: CHARGEMENT DES DONNÉES ===
-    logger.info("📥 1. Chargement des données Kaggle...")
+    logger.info(" 1. Chargement des données Kaggle...")
 
     with open('config.yaml', 'r') as f:
         config = yaml.safe_load(f)
@@ -73,7 +73,7 @@ def run_complete_preprocessing():
     recipes_df = dfs['RAW_recipes.csv'].copy()
     interactions_df = dfs['RAW_interactions.csv'].copy()
 
-    logger.info("📊 Dataset complet chargé:")
+    logger.info(" Dataset complet chargé:")
     logger.info(f"   - Recettes: {len(recipes_df):,}")
     logger.info(f"   - Interactions: {len(interactions_df):,}")
 
@@ -87,7 +87,7 @@ def run_complete_preprocessing():
     # Au moins quelques caractères
     recipes_df = recipes_df[recipes_df['ingredients'].str.len() > 10]
 
-    logger.info(f"📉 Filtrage: {initial_count:,} → {len(recipes_df):,} recettes")
+    logger.info(f" Filtrage: {initial_count:,} → {len(recipes_df):,} recettes")
 
     # === ÉTAPE 3: PREPROCESSING PARALLÈLE ===
     logger.info("⚡ 3. Preprocessing parallèle du dataset complet...")
@@ -96,7 +96,7 @@ def run_complete_preprocessing():
     n_cores = min(cpu_count() - 1, 8)  # Utiliser tous les cores - 1
     chunk_size = max(2000, len(recipes_df) // (n_cores * 3))  # Chunks optimaux
 
-    logger.info(f"🔧 Configuration: {n_cores} cores, chunks de {chunk_size}")
+    logger.info(f" Configuration: {n_cores} cores, chunks de {chunk_size}")
 
     # Créer les chunks
     chunks = []
@@ -105,10 +105,10 @@ def run_complete_preprocessing():
         chunk = recipes_df.iloc[i:end_idx].copy()
         chunks.append((chunk, i // chunk_size + 1))
 
-    logger.info(f"📦 {len(chunks)} chunks créés pour {len(recipes_df):,} recettes")
+    logger.info(f" {len(chunks)} chunks créés pour {len(recipes_df):,} recettes")
 
     # Traitement parallèle
-    logger.info("🔄 Démarrage du traitement parallèle...")
+    logger.info(" Démarrage du traitement parallèle...")
 
     with Pool(n_cores) as pool:
         processed_chunks = pool.map(process_chunk, chunks)
@@ -116,10 +116,10 @@ def run_complete_preprocessing():
     # Filtrer les chunks vides
     processed_chunks = [chunk for chunk in processed_chunks if not chunk.empty]
 
-    logger.info(f"✅ {len(processed_chunks)} chunks traités avec succès")
+    logger.info(f" {len(processed_chunks)} chunks traités avec succès")
 
     # === ÉTAPE 4: ASSEMBLAGE FINAL ===
-    logger.info("🔗 4. Assemblage des données preprocessées...")
+    logger.info(" 4. Assemblage des données preprocessées...")
 
     # Combiner tous les chunks
     processed_recipes = pd.concat(
@@ -148,11 +148,11 @@ def run_complete_preprocessing():
     if 'normalized_ingredients_list' in processed_recipes.columns:
         processed_recipes['normalized_ingredients'] = processed_recipes['normalized_ingredients_list']
 
-    logger.info(f"🎯 Dataset final: {len(processed_recipes):,} recettes preprocessées")
-    logger.info(f"📋 Colonnes: {list(processed_recipes.columns)}")
+    logger.info(f" Dataset final: {len(processed_recipes):,} recettes preprocessées")
+    logger.info(f" Colonnes: {list(processed_recipes.columns)}")
 
     # === ÉTAPE 5: SAUVEGARDE POUR STREAMLIT ===
-    logger.info("💾 5. Sauvegarde pour injection Streamlit...")
+    logger.info(" 5. Sauvegarde pour injection Streamlit...")
 
     # Créer le répertoire de sortie
     output_dir = "/shared_data"  # Dossier partagé avec Streamlit
@@ -177,10 +177,10 @@ def run_complete_preprocessing():
             "interactions.csv"),
         index=False)
 
-    logger.info(f"✅ Données sauvegardées dans {output_dir}")
+    logger.info(f" Données sauvegardées dans {output_dir}")
 
     # === ÉTAPE 6: MÉTADONNÉES ET VALIDATION ===
-    logger.info("📊 6. Génération des métadonnées...")
+    logger.info(" 6. Génération des métadonnées...")
 
     # Validation rapide
     has_ingredients = processed_recipes['normalized_ingredients'].apply(

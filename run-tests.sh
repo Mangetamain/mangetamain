@@ -12,7 +12,7 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-echo -e "${BLUE}🧪 MangeTaMain - Script de tests Docker${NC}"
+echo -e "${BLUE} MangeTaMain - Script de tests Docker${NC}"
 echo "========================================"
 
 # Fonction d'aide
@@ -119,7 +119,7 @@ fi
 
 # Mode développement interactif
 if [ "$DEV_MODE" = true ]; then
-    echo -e "${BLUE}🔧 Démarrage du mode développement interactif...${NC}"
+    echo -e "${BLUE} Démarrage du mode développement interactif...${NC}"
     echo -e "${YELLOW}Commands disponibles dans le container:${NC}"
     echo "  poetry run pytest tests/unit/           # Tests unitaires"
     echo "  poetry run pytest tests/integration/    # Tests d'intégration"
@@ -140,25 +140,25 @@ PYTEST_CMD="poetry run pytest"
 case $TEST_TYPE in
     "unit")
         PYTEST_CMD="$PYTEST_CMD tests/unit/"
-        echo -e "${BLUE}🔬 Exécution des tests unitaires...${NC}"
+        echo -e "${BLUE} Exécution des tests unitaires...${NC}"
         ;;
     "integration")
         PYTEST_CMD="$PYTEST_CMD tests/integration/"
-        echo -e "${BLUE}🔗 Exécution des tests d'intégration...${NC}"
+        echo -e "${BLUE} Exécution des tests d'intégration...${NC}"
         ;;
     "performance")
         PYTEST_CMD="$PYTEST_CMD tests/performance/"
-        echo -e "${BLUE}⚡ Exécution des tests de performance...${NC}"
+        echo -e "${BLUE} Exécution des tests de performance...${NC}"
         ;;
     "all")
         PYTEST_CMD="$PYTEST_CMD tests/"
-        echo -e "${BLUE}🧪 Exécution de tous les tests...${NC}"
+        echo -e "${BLUE} Exécution de tous les tests...${NC}"
         ;;
 esac
 
 # Ajouter les options de couverture
 if [ "$COVERAGE_ONLY" = true ]; then
-    echo -e "${BLUE}📊 Génération du rapport de couverture...${NC}"
+    echo -e "${BLUE} Génération du rapport de couverture...${NC}"
     PYTEST_CMD="$PYTEST_CMD --cov=src --cov-report=html:/app/test-reports/htmlcov --cov-report=xml:/app/test-reports/coverage.xml --cov-report=term-missing"
 else
     PYTEST_CMD="$PYTEST_CMD --cov=src --cov-report=html:/app/test-reports/htmlcov --cov-report=xml:/app/test-reports/coverage.xml --cov-report=term-missing --junit-xml=/app/test-reports/junit.xml"
@@ -171,27 +171,27 @@ fi
 
 # Fonction pour exécuter les tests
 run_tests() {
-    echo -e "${YELLOW}📦 Démarrage des services de test...${NC}"
+    echo -e "${YELLOW} Démarrage des services de test...${NC}"
     
     # Démarrer le preprocessing d'abord
     docker-compose --profile testing up $BUILD_FLAG -d preprocessing
     
     # Attendre que le preprocessing soit prêt
-    echo -e "${YELLOW}⏳ Attente du preprocessing...${NC}"
+    echo -e "${YELLOW} Attente du preprocessing...${NC}"
     sleep 5
     
     # Exécuter les tests
-    echo -e "${BLUE}🚀 Exécution: $PYTEST_CMD${NC}"
+    echo -e "${BLUE} Exécution: $PYTEST_CMD${NC}"
     docker-compose --profile testing run --rm tests bash -c "poetry install --with dev && $PYTEST_CMD"
     
     local exit_code=$?
     
     if [ $exit_code -eq 0 ]; then
-        echo -e "${GREEN}✅ Tests terminés avec succès!${NC}"
-        echo -e "${BLUE}📊 Rapports disponibles dans le volume test_reports${NC}"
-        echo -e "${YELLOW}💡 Pour voir les rapports: docker-compose --profile testing exec tests ls -la /app/test-reports/${NC}"
+        echo -e "${GREEN} Tests terminés avec succès!${NC}"
+        echo -e "${BLUE} Rapports disponibles dans le volume test_reports${NC}"
+        echo -e "${YELLOW} Pour voir les rapports: docker-compose --profile testing exec tests ls -la /app/test-reports/${NC}"
     else
-        echo -e "${RED}❌ Les tests ont échoué!${NC}"
+        echo -e "${RED} Les tests ont échoué!${NC}"
     fi
     
     return $exit_code

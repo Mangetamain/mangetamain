@@ -107,7 +107,7 @@ class RecipeScorer:
             return similarities.tolist()
 
         except Exception as e:
-            print(f"⚠️ Erreur cosine similarity, fallback sur Jaccard: {e}")
+            print(f" Erreur cosine similarity, fallback sur Jaccard: {e}")
             # Fallback sur Jaccard en cas d'erreur
             return [self.jaccard_similarity(user_ingredients, recipe_ing)
                     for recipe_ing in recipes_ingredients_list]
@@ -207,11 +207,11 @@ class RecipeScorer:
         if time_limit and 'minutes' in df.columns:
             initial_count = len(df)
             df = df[df['minutes'] <= time_limit]
-            print(f"⏱️ Filtrage temps: {initial_count} → {len(df)} recettes")
+            print(f"⏱ Filtrage temps: {initial_count} → {len(df)} recettes")
 
         # Calculer la similarité Jaccard
         ingredient_col = 'normalized_ingredients' if 'normalized_ingredients' in df.columns else 'ingredients'
-        print(f"📊 Utilisation de la colonne: {ingredient_col}")
+        print(f" Utilisation de la colonne: {ingredient_col}")
 
         df["jaccard"] = df[ingredient_col].apply(
             lambda ing: self.jaccard_similarity(
@@ -219,8 +219,8 @@ class RecipeScorer:
                 ing is not None and len(ing) > 0 if isinstance(
                     ing, list) else pd.notnull(ing)) else 0)
 
-        # 🆕 Calculer la similarité cosine avec TF-IDF
-        print("🔬 Calcul cosine similarity TF-IDF...")
+        #  Calculer la similarité cosine avec TF-IDF
+        print(" Calcul cosine similarity TF-IDF...")
         valid_ingredients = df[ingredient_col].dropna().tolist()
         if valid_ingredients and SKLEARN_AVAILABLE:
             try:
@@ -232,27 +232,27 @@ class RecipeScorer:
                 # Merger les scores cosine dans df principal
                 df = df.merge(df_temp[['id', 'cosine']], on='id', how='left')
                 df["cosine"] = df["cosine"].fillna(0.0)
-                print(f"✅ Cosine similarity calculée pour {len(cosine_scores)} recettes")
+                print(f" Cosine similarity calculée pour {len(cosine_scores)} recettes")
             except Exception as e:
-                print(f"⚠️ Erreur cosine similarity: {e}, utilisation Jaccard seulement")
+                print(f" Erreur cosine similarity: {e}, utilisation Jaccard seulement")
                 df["cosine"] = df["jaccard"]  # Fallback sur Jaccard
         else:
-            print("⚠️ Sklearn indisponible ou pas d'ingrédients, utilisation Jaccard seulement")
+            print(" Sklearn indisponible ou pas d'ingrédients, utilisation Jaccard seulement")
             df["cosine"] = df["jaccard"]  # Fallback sur Jaccard
 
         # Calculer les scores de base
         stats = self.compute_base_score(recipes_df, interactions_df)
-        print(f"📊 Stats calculées pour {len(stats)} recettes")
+        print(f" Stats calculées pour {len(stats)} recettes")
 
-        # 🔥 MERGER CORRIGÉ: maintenant les deux ont 'id'
+        #  MERGER CORRIGÉ: maintenant les deux ont 'id'
         df = df.merge(stats, on="id", how="left")
-        print(f"🔗 Après fusion: {len(df)} recettes")
+        print(f" Après fusion: {len(df)} recettes")
 
         # Remplir les valeurs manquantes
         df["mean_rating_norm"] = df["mean_rating_norm"].fillna(0.5)
         df["popularity"] = df["popularity"].fillna(0.0)
 
-        # 🚀 Score final hybride: Jaccard + Cosine + Rating + Popularité
+        #  Score final hybride: Jaccard + Cosine + Rating + Popularité
         df["score"] = (
             self.alpha * df['jaccard'] +
             self.delta * df['cosine'] +  # Nouveau: cosine similarity
@@ -260,7 +260,7 @@ class RecipeScorer:
             self.gamma * df['popularity']
         )
 
-        print(f"📈 Score hybride calculé: {self.alpha:.1f}*Jaccard + "
+        print(f" Score hybride calculé: {self.alpha:.1f}*Jaccard + "
               f"{self.delta:.1f}*Cosine + {self.beta:.1f}*Rating + "
               f"{self.gamma:.1f}*Popularité")
 
@@ -283,7 +283,7 @@ class RecipeScorer:
             col for col in columns_to_return if col in df.columns]
 
         result = df.sort_values("score", ascending=False).head(top_n)
-        print(f"🎯 Retour de {len(result)} recommandations")
+        print(f" Retour de {len(result)} recommandations")
 
         return result[existing_columns]
 
@@ -293,7 +293,7 @@ RecipScorer = RecipeScorer
 
 # Test direct du module
 if __name__ == "__main__":
-    print("🧪 Test direct du module reco_score avec cosine similarity")
+    print(" Test direct du module reco_score avec cosine similarity")
     scorer = RecipeScorer()
 
     # Test Jaccard
@@ -306,4 +306,4 @@ if __name__ == "__main__":
     cosine = RecipeScorer.cosine_similarity_single(user_ing, recipe_ing)
     print(f"Test Cosine: {cosine:.3f}")
 
-    print("✅ Module reco_score avec cosine similarity prêt!")
+    print(" Module reco_score avec cosine similarity prêt!")
