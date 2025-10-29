@@ -601,10 +601,10 @@ jobs:
           chmod +x "${RAILWAY_BIN}" 2>/dev/null || true
           
           # Verify installation
-          ${RAILWAY_BIN} version
+          ${RAILWAY_BIN} --help | head -5
           
-          # Login using token
-          echo "${{ secrets.RAILWAY_TOKEN }}" | ${RAILWAY_BIN} login
+          # Login using token (set environment variable)
+          export RAILWAY_TOKEN="${{ secrets.RAILWAY_TOKEN }}"
           
           # Deploy
           ${RAILWAY_BIN} up --detach
