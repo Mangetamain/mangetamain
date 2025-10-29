@@ -570,10 +570,10 @@ jobs:
 
 
   # ============================================
-  # JOB 7: DEPLOY TO RAILWAY
+  # JOB 7: DEPLOY TO RAILWAY VIA API
   # ============================================
   deploy-railway:
-    name: Deploy to Railway
+    name: Deploy to Railway via API
     runs-on: ubuntu-latest
     #needs: [build-documentation]  # Commented out to run independently
     #if: github.ref == 'refs/heads/main' && github.event_name == 'push'
@@ -582,23 +582,73 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Deploy to Railway
+      - name: Get Railway Project Info
+        id: railway-info
         run: |
-          # Simple approach: just trigger Railway's GitHub integration
-          echo "Railway project: mangetamain"
-          echo "Branch: ${{ github.ref_name }}"
-          echo "Commit: ${{ github.sha }}"
+          # Use project ID from secrets and get environment/service info
+          PROJECT_ID="${{ secrets.RAILWAY_PROJECT_ID }}"
+          echo "PROJECT_ID=$PROJECT_ID" >> $GITHUB_OUTPUT
           
-          # Install Railway CLI with npm (more reliable)
-          npm install -g @railway/cli
+          # Get project details using Railway GraphQL API with API token
+          RESPONSE=$(curl -s -X POST \
+            -H "Authorization: Bearer ${{ secrets.RAILWAY_API_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "query": "query($projectId: String!) { project(id: $projectId) { environments { edges { node { id name } } } services { edges { node { id name } } } } }",
+              "variables": { "projectId": "'$PROJECT_ID'" }
+            }' \
+            https://backboard.railway.app/graphql)
           
-          # Set environment variable for authentication
-          export RAILWAY_TOKEN="${{ secrets.RAILWAY_TOKEN }}"
+          echo "Railway API Response:"
+          echo "$RESPONSE" | jq '.'
           
-          # Deploy using railway up with force flag
-          npx railway up --detach || echo "Deployment initiated - Railway will continue building in background"
+          # Extract production environment ID
+          ENV_ID=$(echo "$RESPONSE" | jq -r '.data.project.environments.edges[] | select(.node.name == "production") | .node.id')
+          echo "ENV_ID=$ENV_ID" >> $GITHUB_OUTPUT
+          
+          # Extract service ID (first service)
+          SERVICE_ID=$(echo "$RESPONSE" | jq -r '.data.project.services.edges[0].node.id')
+          echo "SERVICE_ID=$SERVICE_ID" >> $GITHUB_OUTPUT
+
+      - name: Trigger Railway Deployment
+        run: |
+          echo "Triggering deployment with:"
+          echo "Project ID: ${{ steps.railway-info.outputs.PROJECT_ID }}"
+          echo "Environment ID: ${{ steps.railway-info.outputs.ENV_ID }}"
+          echo "Service ID: ${{ steps.railway-info.outputs.SERVICE_ID }}"
+          
+          # Trigger deployment using GraphQL mutation with API token
+          DEPLOY_RESPONSE=$(curl -s -X POST \
+            -H "Authorization: Bearer ${{ secrets.RAILWAY_API_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "query": "mutation deploymentCreate($input: DeploymentCreateInput!) { deploymentCreate(input: $input) { id url status } }",
+              "variables": {
+                "input": {
+                  "environmentId": "${{ steps.railway-info.outputs.ENV_ID }}",
+                  "serviceId": "${{ steps.railway-info.outputs.SERVICE_ID }}",
+                  "meta": {
+                    "branch": "${{ github.ref_name }}",
+                    "commitSha": "${{ github.sha }}",
+                    "repo": "${{ github.repository }}"
+                  }
+                }
+              }
+            }' \
+            https://backboard.railway.app/graphql)
+          
+          echo "Deployment Response:"
+          echo "$DEPLOY_RESPONSE" | jq '.'
+          
+          # Extract deployment ID and URL
+          DEPLOYMENT_ID=$(echo "$DEPLOY_RESPONSE" | jq -r '.data.deploymentCreate.id')
+          DEPLOYMENT_URL=$(echo "$DEPLOY_RESPONSE" | jq -r '.data.deploymentCreate.url')
+          
+          echo "✅ Deployment initiated!"
+          echo "Deployment ID: $DEPLOYMENT_ID"
+          echo "Deployment URL: $DEPLOYMENT_URL"
         env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
 
       - name: Wait for deployment
         env:
