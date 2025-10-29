@@ -612,7 +612,7 @@ jobs:
           export RAILWAY_TOKEN="$RAILWAY_TOKEN"
           
           # Deploy using the Railway Dockerfile configuration
-          railway up --detach
+          RAILWAY_TOKEN=$RAILWAY_TOKEN  railway up --detach
           
           echo "Deployment initiated successfully!"
 
