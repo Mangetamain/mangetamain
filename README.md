@@ -23,6 +23,7 @@ Click the button above to access the live application deployed on Railway.
 - [Docker Volume Usage](docs/DOCKER_VOLUME_USAGE.md) - Detailed volume management
 - [Architecture](docs/ARCHITECTURE.md) - System architecture
 - [Tests](docs/TESTS_README.md) - Testing information
+- [Theory](docs/THEORY.md) - Underlying algorithms and formulas & prepocessing steps explanation
 
 ## 🚀 Quick Start
 
