@@ -10,7 +10,19 @@ A Streamlit-based recipe recommendation system with Docker containerization and 
 
 Click the button above to access the live application deployed on Railway.
 
----
+
+## 📚 Documentation & Tests Coverage
+[![Guithub Pages](https://img.shields.io/badge/GitHub%20Pages-View%20Online-blue?style=for-the-badge)](https://mangetamain.github.io/mangetamain/)
+
+[![Sphinx Docs for Application Streamlit](https://img.shields.io/badge/Sphinx%20API%20Docs%20for%20Application%20Streamlit%20-View%20Online-blue?style=for-the-badge)](https://mangetamain.github.io/mangetamain/streamlit/index.html)
+
+[![Sphinx Docs for Module Preprocessing](https://img.shields.io/badge/Sphinx%20API%20Docs%20for%20Preprocessing%20Module%20-View%20Online-blue?style=for-the-badge)](https://mangetamain.github.io/mangetamain/preprocessing/index.html)    
+
+[![Test Coverage](https://img.shields.io/badge/Test%20Coverage-Report-green?style=for-the-badge)](https://mangetamain.github.io/mangetamain/coverage/index.html)
+
+- [Docker Volume Usage](docs/DOCKER_VOLUME_USAGE.md) - Detailed volume management
+- [Architecture](docs/ARCHITECTURE.md) - System architecture
+- [Tests](docs/TESTS_README.md) - Testing information
 
 ## 🚀 Quick Start
 
@@ -56,8 +68,3 @@ Preprocessed data is available at: `andranik777/mangetamain-data:latest`
 - ✅ **Memory optimized**: Streamlit settings tuned for Railway environment
 
 **Note**: `Dockerfile.railway` is Railway-specific. For local development, use `docker-compose.yml`.
-
-## 📖 Documentation
-- [Docker Volume Usage](docs/DOCKER_VOLUME_USAGE.md) - Detailed volume management
-- [Architecture](docs/ARCHITECTURE.md) - System architecture
-- [Tests](docs/TESTS_README.md) - Testing information
