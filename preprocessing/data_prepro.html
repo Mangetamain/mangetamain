@@ -1,0 +1,484 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>data_prepro module &mdash; MangeTaMain Preprocessing 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=8d563738"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="pipeline module" href="pipeline.html" />
+    <link rel="prev" title="data_load module" href="data_load.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            MangeTaMain Preprocessing
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">preprocessing</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="data_load.html">data_load module</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">data_prepro module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#data_prepro.DescriptionPreprocessor"><code class="docutils literal notranslate"><span class="pre">DescriptionPreprocessor</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#data_prepro.DescriptionPreprocessor.extract_keywords"><code class="docutils literal notranslate"><span class="pre">DescriptionPreprocessor.extract_keywords()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#data_prepro.IngredientPreprocessor"><code class="docutils literal notranslate"><span class="pre">IngredientPreprocessor</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#data_prepro.IngredientPreprocessor.CATEGORIES"><code class="docutils literal notranslate"><span class="pre">IngredientPreprocessor.CATEGORIES</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#data_prepro.IngredientPreprocessor.MEASURES"><code class="docutils literal notranslate"><span class="pre">IngredientPreprocessor.MEASURES</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#data_prepro.IngredientPreprocessor.categorize"><code class="docutils literal notranslate"><span class="pre">IngredientPreprocessor.categorize()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#data_prepro.IngredientPreprocessor.normalize_ingredient"><code class="docutils literal notranslate"><span class="pre">IngredientPreprocessor.normalize_ingredient()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#data_prepro.IngredientPreprocessor.parse_and_clean"><code class="docutils literal notranslate"><span class="pre">IngredientPreprocessor.parse_and_clean()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#data_prepro.NutritionPreprocessor"><code class="docutils literal notranslate"><span class="pre">NutritionPreprocessor</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#data_prepro.NutritionPreprocessor.NUTRITION_FIELDS"><code class="docutils literal notranslate"><span class="pre">NutritionPreprocessor.NUTRITION_FIELDS</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#data_prepro.NutritionPreprocessor.compute_health_score"><code class="docutils literal notranslate"><span class="pre">NutritionPreprocessor.compute_health_score()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#data_prepro.NutritionPreprocessor.parse_nutrition"><code class="docutils literal notranslate"><span class="pre">NutritionPreprocessor.parse_nutrition()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#data_prepro.RecipeFeatures"><code class="docutils literal notranslate"><span class="pre">RecipeFeatures</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#data_prepro.RecipeFeatures.cooking_techniques"><code class="docutils literal notranslate"><span class="pre">RecipeFeatures.cooking_techniques</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#data_prepro.RecipeFeatures.cuisine_type"><code class="docutils literal notranslate"><span class="pre">RecipeFeatures.cuisine_type</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#data_prepro.RecipeFeatures.description_keywords"><code class="docutils literal notranslate"><span class="pre">RecipeFeatures.description_keywords</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#data_prepro.RecipeFeatures.dietary_restrictions"><code class="docutils literal notranslate"><span class="pre">RecipeFeatures.dietary_restrictions</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#data_prepro.RecipeFeatures.effort_score"><code class="docutils literal notranslate"><span class="pre">RecipeFeatures.effort_score</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#data_prepro.RecipeFeatures.ingredient_categories"><code class="docutils literal notranslate"><span class="pre">RecipeFeatures.ingredient_categories</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#data_prepro.RecipeFeatures.ingredients"><code class="docutils literal notranslate"><span class="pre">RecipeFeatures.ingredients</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#data_prepro.RecipeFeatures.meal_type"><code class="docutils literal notranslate"><span class="pre">RecipeFeatures.meal_type</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#data_prepro.RecipeFeatures.n_steps"><code class="docutils literal notranslate"><span class="pre">RecipeFeatures.n_steps</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#data_prepro.RecipeFeatures.normalized_ingredients_list"><code class="docutils literal notranslate"><span class="pre">RecipeFeatures.normalized_ingredients_list</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#data_prepro.RecipeFeatures.nutrition_dict"><code class="docutils literal notranslate"><span class="pre">RecipeFeatures.nutrition_dict</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#data_prepro.RecipeFeatures.recipe_id"><code class="docutils literal notranslate"><span class="pre">RecipeFeatures.recipe_id</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#data_prepro.RecipeFeatures.tags"><code class="docutils literal notranslate"><span class="pre">RecipeFeatures.tags</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#data_prepro.RecipePreprocessor"><code class="docutils literal notranslate"><span class="pre">RecipePreprocessor</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#data_prepro.RecipePreprocessor.preprocess_dataframe"><code class="docutils literal notranslate"><span class="pre">RecipePreprocessor.preprocess_dataframe()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#data_prepro.RecipePreprocessor.preprocess_recipe"><code class="docutils literal notranslate"><span class="pre">RecipePreprocessor.preprocess_recipe()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#data_prepro.StepsPreprocessor"><code class="docutils literal notranslate"><span class="pre">StepsPreprocessor</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#data_prepro.StepsPreprocessor.COOKING_TECHNIQUES"><code class="docutils literal notranslate"><span class="pre">StepsPreprocessor.COOKING_TECHNIQUES</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#data_prepro.StepsPreprocessor.compute_effort_score"><code class="docutils literal notranslate"><span class="pre">StepsPreprocessor.compute_effort_score()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#data_prepro.StepsPreprocessor.extract_techniques"><code class="docutils literal notranslate"><span class="pre">StepsPreprocessor.extract_techniques()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#data_prepro.StepsPreprocessor.parse_steps"><code class="docutils literal notranslate"><span class="pre">StepsPreprocessor.parse_steps()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#data_prepro.TagsPreprocessor"><code class="docutils literal notranslate"><span class="pre">TagsPreprocessor</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#data_prepro.TagsPreprocessor.CUISINES"><code class="docutils literal notranslate"><span class="pre">TagsPreprocessor.CUISINES</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#data_prepro.TagsPreprocessor.DIETARY"><code class="docutils literal notranslate"><span class="pre">TagsPreprocessor.DIETARY</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#data_prepro.TagsPreprocessor.MEAL_TYPES"><code class="docutils literal notranslate"><span class="pre">TagsPreprocessor.MEAL_TYPES</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#data_prepro.TagsPreprocessor.extract_cuisine_type"><code class="docutils literal notranslate"><span class="pre">TagsPreprocessor.extract_cuisine_type()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#data_prepro.TagsPreprocessor.extract_dietary_restriction"><code class="docutils literal notranslate"><span class="pre">TagsPreprocessor.extract_dietary_restriction()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#data_prepro.TagsPreprocessor.extract_meal_type"><code class="docutils literal notranslate"><span class="pre">TagsPreprocessor.extract_meal_type()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#data_prepro.TagsPreprocessor.extract_time_constrained"><code class="docutils literal notranslate"><span class="pre">TagsPreprocessor.extract_time_constrained()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#data_prepro.TagsPreprocessor.parse_tags"><code class="docutils literal notranslate"><span class="pre">TagsPreprocessor.parse_tags()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pipeline.html">pipeline module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reco_score.html">reco_score module</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">MangeTaMain Preprocessing</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">preprocessing</a></li>
+      <li class="breadcrumb-item active">data_prepro module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/data_prepro.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-data_prepro">
+<span id="data-prepro-module"></span><h1>data_prepro module<a class="headerlink" href="#module-data_prepro" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="data_prepro.DescriptionPreprocessor">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">data_prepro.</span></span><span class="sig-name descname"><span class="pre">DescriptionPreprocessor</span></span><a class="reference internal" href="_modules/data_prepro.html#DescriptionPreprocessor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#data_prepro.DescriptionPreprocessor" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="data_prepro.DescriptionPreprocessor.extract_keywords">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">extract_keywords</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">description</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">top_n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_prepro.html#DescriptionPreprocessor.extract_keywords"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#data_prepro.DescriptionPreprocessor.extract_keywords" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="data_prepro.IngredientPreprocessor">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">data_prepro.</span></span><span class="sig-name descname"><span class="pre">IngredientPreprocessor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ingr_map_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_prepro.html#IngredientPreprocessor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#data_prepro.IngredientPreprocessor" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>prétraitement des ingrédients avec catégorisation et normalisation via ingr_map.pkl</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="data_prepro.IngredientPreprocessor.CATEGORIES">
+<span class="sig-name descname"><span class="pre">CATEGORIES</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'dairy':</span> <span class="pre">['milk',</span> <span class="pre">'cheese',</span> <span class="pre">'butter',</span> <span class="pre">'cream',</span> <span class="pre">'yogurt',</span> <span class="pre">'sour</span> <span class="pre">cream'],</span> <span class="pre">'fruits':</span> <span class="pre">['apple',</span> <span class="pre">'banana',</span> <span class="pre">'orange',</span> <span class="pre">'lemon',</span> <span class="pre">'strawberry',</span> <span class="pre">'blueberry'],</span> <span class="pre">'grains':</span> <span class="pre">['flour',</span> <span class="pre">'rice',</span> <span class="pre">'pasta',</span> <span class="pre">'bread',</span> <span class="pre">'oat',</span> <span class="pre">'quinoa',</span> <span class="pre">'wheat'],</span> <span class="pre">'oils':</span> <span class="pre">['olive</span> <span class="pre">oil',</span> <span class="pre">'vegetable</span> <span class="pre">oil',</span> <span class="pre">'coconut</span> <span class="pre">oil',</span> <span class="pre">'butter'],</span> <span class="pre">'proteins':</span> <span class="pre">['chicken',</span> <span class="pre">'beef',</span> <span class="pre">'pork',</span> <span class="pre">'fish',</span> <span class="pre">'salmon',</span> <span class="pre">'tuna',</span> <span class="pre">'shrimp',</span> <span class="pre">'turkey',</span> <span class="pre">'lamb',</span> <span class="pre">'egg',</span> <span class="pre">'tofu',</span> <span class="pre">'tempeh'],</span> <span class="pre">'spices':</span> <span class="pre">['salt',</span> <span class="pre">'pepper',</span> <span class="pre">'cumin',</span> <span class="pre">'paprika',</span> <span class="pre">'cinnamon',</span> <span class="pre">'basil',</span> <span class="pre">'oregano',</span> <span class="pre">'thyme',</span> <span class="pre">'rosemary'],</span> <span class="pre">'sweeteners':</span> <span class="pre">['sugar',</span> <span class="pre">'honey',</span> <span class="pre">'maple</span> <span class="pre">syrup',</span> <span class="pre">'brown</span> <span class="pre">sugar'],</span> <span class="pre">'vegetables':</span> <span class="pre">['tomato',</span> <span class="pre">'onion',</span> <span class="pre">'garlic',</span> <span class="pre">'carrot',</span> <span class="pre">'potato',</span> <span class="pre">'broccoli',</span> <span class="pre">'spinach',</span> <span class="pre">'pepper',</span> <span class="pre">'mushroom',</span> <span class="pre">'lettuce',</span> <span class="pre">'cucumber']}</span></em><a class="headerlink" href="#data_prepro.IngredientPreprocessor.CATEGORIES" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="data_prepro.IngredientPreprocessor.MEASURES">
+<span class="sig-name descname"><span class="pre">MEASURES</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\\b(cup|tablespoon|teaspoon|pound|ounce|oz|lb|tsp|tbsp|ml|l|g|kg|pinch|dash)\\b'</span></em><a class="headerlink" href="#data_prepro.IngredientPreprocessor.MEASURES" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="data_prepro.IngredientPreprocessor.categorize">
+<span class="sig-name descname"><span class="pre">categorize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ingredients</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_prepro.html#IngredientPreprocessor.categorize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#data_prepro.IngredientPreprocessor.categorize" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="data_prepro.IngredientPreprocessor.normalize_ingredient">
+<span class="sig-name descname"><span class="pre">normalize_ingredient</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raw_ingredient</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_prepro.html#IngredientPreprocessor.normalize_ingredient"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#data_prepro.IngredientPreprocessor.normalize_ingredient" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="data_prepro.IngredientPreprocessor.parse_and_clean">
+<span class="sig-name descname"><span class="pre">parse_and_clean</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ingredients_str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_prepro.html#IngredientPreprocessor.parse_and_clean"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#data_prepro.IngredientPreprocessor.parse_and_clean" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="data_prepro.NutritionPreprocessor">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">data_prepro.</span></span><span class="sig-name descname"><span class="pre">NutritionPreprocessor</span></span><a class="reference internal" href="_modules/data_prepro.html#NutritionPreprocessor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#data_prepro.NutritionPreprocessor" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="data_prepro.NutritionPreprocessor.NUTRITION_FIELDS">
+<span class="sig-name descname"><span class="pre">NUTRITION_FIELDS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['calories',</span> <span class="pre">'fat',</span> <span class="pre">'total_fat',</span> <span class="pre">'carbohydrates',</span> <span class="pre">'sugar',</span> <span class="pre">'protein',</span> <span class="pre">'sodium']</span></em><a class="headerlink" href="#data_prepro.NutritionPreprocessor.NUTRITION_FIELDS" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="data_prepro.NutritionPreprocessor.compute_health_score">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">compute_health_score</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nutrition</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_prepro.html#NutritionPreprocessor.compute_health_score"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#data_prepro.NutritionPreprocessor.compute_health_score" title="Link to this definition"></a></dt>
+<dd><p>construction d’un score de nutrition simple (0-1)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="data_prepro.NutritionPreprocessor.parse_nutrition">
+<span class="sig-name descname"><span class="pre">parse_nutrition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nutrition_str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_prepro.html#NutritionPreprocessor.parse_nutrition"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#data_prepro.NutritionPreprocessor.parse_nutrition" title="Link to this definition"></a></dt>
+<dd><p>Parse la chaîne de nutrition en dictionnaire avec valeurs float.
+“[calories, fat, sugar, …]” -&gt; {‘calories’: val, ‘fat’: val, …}</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="data_prepro.RecipeFeatures">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">data_prepro.</span></span><span class="sig-name descname"><span class="pre">RecipeFeatures</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">recipe_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ingredients</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ingredient_categories</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalized_ingredients_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nutrition_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tags</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">meal_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dietary_restrictions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cuisine_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_steps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">effort_score</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cooking_techniques</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description_keywords</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_prepro.html#RecipeFeatures"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#data_prepro.RecipeFeatures" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="data_prepro.RecipeFeatures.cooking_techniques">
+<span class="sig-name descname"><span class="pre">cooking_techniques</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">Set</span></code><span class="pre">[</span><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code><span class="pre">]</span></em><a class="headerlink" href="#data_prepro.RecipeFeatures.cooking_techniques" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="data_prepro.RecipeFeatures.cuisine_type">
+<span class="sig-name descname"><span class="pre">cuisine_type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code><span class="pre">[</span><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code><span class="pre">]</span></em><a class="headerlink" href="#data_prepro.RecipeFeatures.cuisine_type" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="data_prepro.RecipeFeatures.description_keywords">
+<span class="sig-name descname"><span class="pre">description_keywords</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code><span class="pre">[</span><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code><span class="pre">]</span></em><a class="headerlink" href="#data_prepro.RecipeFeatures.description_keywords" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="data_prepro.RecipeFeatures.dietary_restrictions">
+<span class="sig-name descname"><span class="pre">dietary_restrictions</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code><span class="pre">[</span><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code><span class="pre">]</span></em><a class="headerlink" href="#data_prepro.RecipeFeatures.dietary_restrictions" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="data_prepro.RecipeFeatures.effort_score">
+<span class="sig-name descname"><span class="pre">effort_score</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></em><a class="headerlink" href="#data_prepro.RecipeFeatures.effort_score" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="data_prepro.RecipeFeatures.ingredient_categories">
+<span class="sig-name descname"><span class="pre">ingredient_categories</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code><span class="pre">[</span><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code><span class="pre">,</span> <code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code><span class="pre">[</span><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code><span class="pre">]]</span></em><a class="headerlink" href="#data_prepro.RecipeFeatures.ingredient_categories" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="data_prepro.RecipeFeatures.ingredients">
+<span class="sig-name descname"><span class="pre">ingredients</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">Set</span></code><span class="pre">[</span><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code><span class="pre">]</span></em><a class="headerlink" href="#data_prepro.RecipeFeatures.ingredients" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="data_prepro.RecipeFeatures.meal_type">
+<span class="sig-name descname"><span class="pre">meal_type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code><span class="pre">[</span><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code><span class="pre">]</span></em><a class="headerlink" href="#data_prepro.RecipeFeatures.meal_type" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="data_prepro.RecipeFeatures.n_steps">
+<span class="sig-name descname"><span class="pre">n_steps</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></em><a class="headerlink" href="#data_prepro.RecipeFeatures.n_steps" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="data_prepro.RecipeFeatures.normalized_ingredients_list">
+<span class="sig-name descname"><span class="pre">normalized_ingredients_list</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code><span class="pre">[</span><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code><span class="pre">]</span></em><a class="headerlink" href="#data_prepro.RecipeFeatures.normalized_ingredients_list" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="data_prepro.RecipeFeatures.nutrition_dict">
+<span class="sig-name descname"><span class="pre">nutrition_dict</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code><span class="pre">[</span><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code><span class="pre">,</span> <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code><span class="pre">]</span></em><a class="headerlink" href="#data_prepro.RecipeFeatures.nutrition_dict" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="data_prepro.RecipeFeatures.recipe_id">
+<span class="sig-name descname"><span class="pre">recipe_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></em><a class="headerlink" href="#data_prepro.RecipeFeatures.recipe_id" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="data_prepro.RecipeFeatures.tags">
+<span class="sig-name descname"><span class="pre">tags</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">Set</span></code><span class="pre">[</span><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code><span class="pre">]</span></em><a class="headerlink" href="#data_prepro.RecipeFeatures.tags" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="data_prepro.RecipePreprocessor">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">data_prepro.</span></span><span class="sig-name descname"><span class="pre">RecipePreprocessor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ingr_map_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_prepro.html#RecipePreprocessor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#data_prepro.RecipePreprocessor" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Orchestrateur principal du prétraitement.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="data_prepro.RecipePreprocessor.preprocess_dataframe">
+<span class="sig-name descname"><span class="pre">preprocess_dataframe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_prepro.html#RecipePreprocessor.preprocess_dataframe"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#data_prepro.RecipePreprocessor.preprocess_dataframe" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="data_prepro.RecipePreprocessor.preprocess_recipe">
+<span class="sig-name descname"><span class="pre">preprocess_recipe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">row</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_prepro.html#RecipePreprocessor.preprocess_recipe"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#data_prepro.RecipePreprocessor.preprocess_recipe" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#data_prepro.RecipeFeatures" title="data_prepro.RecipeFeatures"><code class="xref py py-class docutils literal notranslate"><span class="pre">RecipeFeatures</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="data_prepro.StepsPreprocessor">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">data_prepro.</span></span><span class="sig-name descname"><span class="pre">StepsPreprocessor</span></span><a class="reference internal" href="_modules/data_prepro.html#StepsPreprocessor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#data_prepro.StepsPreprocessor" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="data_prepro.StepsPreprocessor.COOKING_TECHNIQUES">
+<span class="sig-name descname"><span class="pre">COOKING_TECHNIQUES</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'bake',</span> <span class="pre">'blend',</span> <span class="pre">'boil',</span> <span class="pre">'braise',</span> <span class="pre">'broil',</span> <span class="pre">'chop',</span> <span class="pre">'dice',</span> <span class="pre">'fry',</span> <span class="pre">'garnish',</span> <span class="pre">'grill',</span> <span class="pre">'marinate',</span> <span class="pre">'mix',</span> <span class="pre">'poach',</span> <span class="pre">'roast',</span> <span class="pre">'sauté',</span> <span class="pre">'season',</span> <span class="pre">'simmer',</span> <span class="pre">'steam',</span> <span class="pre">'stir-fry',</span> <span class="pre">'whisk'}</span></em><a class="headerlink" href="#data_prepro.StepsPreprocessor.COOKING_TECHNIQUES" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="data_prepro.StepsPreprocessor.compute_effort_score">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">compute_effort_score</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_steps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">steps</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_prepro.html#StepsPreprocessor.compute_effort_score"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#data_prepro.StepsPreprocessor.compute_effort_score" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="data_prepro.StepsPreprocessor.extract_techniques">
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">extract_techniques</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">steps</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_prepro.html#StepsPreprocessor.extract_techniques"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#data_prepro.StepsPreprocessor.extract_techniques" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Set</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="data_prepro.StepsPreprocessor.parse_steps">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">parse_steps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">steps_str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_prepro.html#StepsPreprocessor.parse_steps"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#data_prepro.StepsPreprocessor.parse_steps" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="data_prepro.TagsPreprocessor">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">data_prepro.</span></span><span class="sig-name descname"><span class="pre">TagsPreprocessor</span></span><a class="reference internal" href="_modules/data_prepro.html#TagsPreprocessor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#data_prepro.TagsPreprocessor" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>extraction de l’information structurées a partir des tags</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="data_prepro.TagsPreprocessor.CUISINES">
+<span class="sig-name descname"><span class="pre">CUISINES</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['mexican',</span> <span class="pre">'italian',</span> <span class="pre">'chinese',</span> <span class="pre">'indian',</span> <span class="pre">'french',</span> <span class="pre">'thai',</span> <span class="pre">'japanese',</span> <span class="pre">'greek',</span> <span class="pre">'spanish',</span> <span class="pre">'american',</span> <span class="pre">'mediterranean']</span></em><a class="headerlink" href="#data_prepro.TagsPreprocessor.CUISINES" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="data_prepro.TagsPreprocessor.DIETARY">
+<span class="sig-name descname"><span class="pre">DIETARY</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'dairy-free':</span> <span class="pre">['dairy-free',</span> <span class="pre">'lactose-free'],</span> <span class="pre">'gluten-free':</span> <span class="pre">['gluten-free'],</span> <span class="pre">'healthy':</span> <span class="pre">['healthy',</span> <span class="pre">'low-fat',</span> <span class="pre">'low-sodium',</span> <span class="pre">'low-calorie'],</span> <span class="pre">'low-carb':</span> <span class="pre">['low-carb',</span> <span class="pre">'low-carbohydrate'],</span> <span class="pre">'vegan':</span> <span class="pre">['vegan'],</span> <span class="pre">'vegetarian':</span> <span class="pre">['vegetarian',</span> <span class="pre">'vegan']}</span></em><a class="headerlink" href="#data_prepro.TagsPreprocessor.DIETARY" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="data_prepro.TagsPreprocessor.MEAL_TYPES">
+<span class="sig-name descname"><span class="pre">MEAL_TYPES</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'breakfast':</span> <span class="pre">['breakfast',</span> <span class="pre">'brunch'],</span> <span class="pre">'dinner':</span> <span class="pre">['dinner',</span> <span class="pre">'main-dish'],</span> <span class="pre">'lunch':</span> <span class="pre">['lunch',</span> <span class="pre">'main-dish'],</span> <span class="pre">'snack':</span> <span class="pre">['snacks',</span> <span class="pre">'appetizers']}</span></em><a class="headerlink" href="#data_prepro.TagsPreprocessor.MEAL_TYPES" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="data_prepro.TagsPreprocessor.extract_cuisine_type">
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">extract_cuisine_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tags</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_prepro.html#TagsPreprocessor.extract_cuisine_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#data_prepro.TagsPreprocessor.extract_cuisine_type" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="data_prepro.TagsPreprocessor.extract_dietary_restriction">
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">extract_dietary_restriction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tags</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_prepro.html#TagsPreprocessor.extract_dietary_restriction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#data_prepro.TagsPreprocessor.extract_dietary_restriction" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="data_prepro.TagsPreprocessor.extract_meal_type">
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">extract_meal_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tags</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_prepro.html#TagsPreprocessor.extract_meal_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#data_prepro.TagsPreprocessor.extract_meal_type" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="data_prepro.TagsPreprocessor.extract_time_constrained">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">extract_time_constrained</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tags</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_prepro.html#TagsPreprocessor.extract_time_constrained"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#data_prepro.TagsPreprocessor.extract_time_constrained" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="data_prepro.TagsPreprocessor.parse_tags">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">parse_tags</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tags_str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_prepro.html#TagsPreprocessor.parse_tags"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#data_prepro.TagsPreprocessor.parse_tags" title="Link to this definition"></a></dt>
+<dd><p>nettoyer les tags</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Set</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="data_load.html" class="btn btn-neutral float-left" title="data_load module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="pipeline.html" class="btn btn-neutral float-right" title="pipeline module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, MangeTaMain Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

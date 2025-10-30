@@ -1,0 +1,15 @@
+src.ui package
+==============
+
+.. automodule:: src.ui
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 4
+
+   src.ui.components

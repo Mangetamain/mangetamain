@@ -1,0 +1,342 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>src.core.app &mdash; MangeTaMain Streamlit 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            MangeTaMain Streamlit
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">src</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">MangeTaMain Streamlit</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">src.core.app</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for src.core.app</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Application principale MangeTaMain</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">streamlit</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">st</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">..managers.data_manager</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataManager</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..engines.recommendation_engine</span><span class="w"> </span><span class="kn">import</span> <span class="n">RecommendationEngine</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..ui.components</span><span class="w"> </span><span class="kn">import</span> <span class="n">UIComponents</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..utils.styles</span><span class="w"> </span><span class="kn">import</span> <span class="n">StyleManager</span>
+
+
+<div class="viewcode-block" id="MangeTaMainApp">
+<a class="viewcode-back" href="../../../src.main.html#src.core.MangeTaMainApp">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">MangeTaMainApp</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Application principale de MangeTaMain&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialise l&#39;application avec ses composants&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_manager</span> <span class="o">=</span> <span class="n">DataManager</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">recommendation_engine</span> <span class="o">=</span> <span class="n">RecommendationEngine</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ui_components</span> <span class="o">=</span> <span class="n">UIComponents</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_parse_user_ingredients</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user_input</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Parse les ingrédients saisis par l&#39;utilisateur&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">ing</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">ing</span> <span class="ow">in</span> <span class="n">user_input</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="n">ing</span><span class="o">.</span><span class="n">strip</span><span class="p">()]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_display_recommendations_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">recommendations</span><span class="p">,</span> <span class="n">user_ingredients</span><span class="p">,</span> <span class="n">sort_mode</span><span class="o">=</span><span class="s2">&quot;score&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Affiche les statistiques des recommandations avec info sur le tri&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">recommendations</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+            <span class="c1"># Statistiques rapides</span>
+            <span class="n">avg_jaccard</span> <span class="o">=</span> <span class="n">recommendations</span><span class="p">[</span><span class="s1">&#39;jaccard&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+            <span class="n">max_jaccard</span> <span class="o">=</span> <span class="n">recommendations</span><span class="p">[</span><span class="s1">&#39;jaccard&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+            <span class="n">matches_count</span> <span class="o">=</span> <span class="p">(</span><span class="n">recommendations</span><span class="p">[</span><span class="s1">&#39;jaccard&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+            <span class="c1"># Statistiques cosine si disponibles</span>
+            <span class="n">cosine_info</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+            <span class="k">if</span> <span class="s1">&#39;cosine&#39;</span> <span class="ow">in</span> <span class="n">recommendations</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+                <span class="n">avg_cosine</span> <span class="o">=</span> <span class="n">recommendations</span><span class="p">[</span><span class="s1">&#39;cosine&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+                <span class="n">max_cosine</span> <span class="o">=</span> <span class="n">recommendations</span><span class="p">[</span><span class="s1">&#39;cosine&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+                <span class="n">cosine_info</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot; | Cosine moyen: </span><span class="si">{</span><span class="n">avg_cosine</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span>
+
+            <span class="c1"># Info sur le score utilisé pour le tri</span>
+            <span class="n">sort_info</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+            <span class="k">if</span> <span class="n">sort_mode</span> <span class="o">==</span> <span class="s2">&quot;intelligent&quot;</span> <span class="ow">and</span> <span class="s1">&#39;composite_score&#39;</span> <span class="ow">in</span> <span class="n">recommendations</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+                <span class="n">avg_composite</span> <span class="o">=</span> <span class="n">recommendations</span><span class="p">[</span><span class="s1">&#39;composite_score&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+                <span class="n">sort_info</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot; | Score composite moyen: </span><span class="si">{</span><span class="n">avg_composite</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">elif</span> <span class="n">sort_mode</span> <span class="o">==</span> <span class="s2">&quot;jaccard&quot;</span><span class="p">:</span>
+                <span class="n">sort_info</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot; | Tri par Jaccard (max: </span><span class="si">{</span><span class="n">max_jaccard</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">)&quot;</span>
+            <span class="k">elif</span> <span class="n">sort_mode</span> <span class="o">==</span> <span class="s2">&quot;cosine&quot;</span> <span class="ow">and</span> <span class="s1">&#39;cosine&#39;</span> <span class="ow">in</span> <span class="n">recommendations</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+                <span class="n">sort_info</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot; | Tri par Cosine TF-IDF (max: </span><span class="si">{</span><span class="n">max_cosine</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">)&quot;</span>
+            <span class="k">elif</span> <span class="n">sort_mode</span> <span class="o">==</span> <span class="s2">&quot;score&quot;</span><span class="p">:</span>
+                <span class="n">avg_score</span> <span class="o">=</span> <span class="n">recommendations</span><span class="p">[</span><span class="s1">&#39;score&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+                <span class="n">sort_info</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot; | Tri par score global (moyen: </span><span class="si">{</span><span class="n">avg_score</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">)&quot;</span>
+
+            <span class="n">st</span><span class="o">.</span><span class="n">success</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;🎉 **</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">recommendations</span><span class="p">)</span><span class="si">}</span><span class="s2"> recommandations générées** | &quot;</span>
+                       <span class="sa">f</span><span class="s2">&quot;Jaccard moyen: </span><span class="si">{</span><span class="n">avg_jaccard</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span>
+                       <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">cosine_info</span><span class="si">}</span><span class="s2"> | &quot;</span>
+                       <span class="sa">f</span><span class="s2">&quot;Recettes avec correspondances: </span><span class="si">{</span><span class="n">matches_count</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">recommendations</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+                       <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">sort_info</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Afficher les recommandations</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">recipe</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">recommendations</span><span class="o">.</span><span class="n">iterrows</span><span class="p">(),</span> <span class="mi">1</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ui_components</span><span class="o">.</span><span class="n">display_recipe_card</span><span class="p">(</span><span class="n">recipe</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">user_ingredients</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">st</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;❌ Aucune recommandation trouvée avec ces critères&quot;</span><span class="p">)</span>
+            <span class="n">st</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;💡 Essayez avec des ingrédients plus communs ou supprimez la limite de temps&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_handle_user_input_section</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gère la section de saisie utilisateur et retourne les paramètres&quot;&quot;&quot;</span>
+        <span class="n">st</span><span class="o">.</span><span class="n">header</span><span class="p">(</span><span class="s2">&quot;🥄 Vos Ingrédients Disponibles&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Zone de saisie des ingrédients</span>
+        <span class="n">col_input</span><span class="p">,</span> <span class="n">col_time</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">columns</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+
+        <span class="k">with</span> <span class="n">col_input</span><span class="p">:</span>
+            <span class="n">user_input</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">text_input</span><span class="p">(</span>
+                <span class="s2">&quot;Entrez vos ingrédients (séparés par des virgules):&quot;</span><span class="p">,</span>
+                <span class="n">placeholder</span><span class="o">=</span><span class="s2">&quot;chicken, onion, garlic, tomato, basil, olive oil, salt, pepper&quot;</span><span class="p">,</span>
+                <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Tapez les ingrédients que vous avez dans votre frigo, séparés par des virgules&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">with</span> <span class="n">col_time</span><span class="p">:</span>
+            <span class="n">time_options</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">45</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="mi">90</span><span class="p">,</span> <span class="mi">120</span><span class="p">,</span> <span class="mi">180</span><span class="p">]</span>
+            <span class="n">time_limit</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">selectbox</span><span class="p">(</span>
+                <span class="s2">&quot;⏱️ Temps max (min):&quot;</span><span class="p">,</span>
+                <span class="n">time_options</span><span class="p">,</span>
+                <span class="n">format_func</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="s2">&quot;Illimité&quot;</span> <span class="k">if</span> <span class="n">x</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2"> min&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Paramètres additionnels - Mode de tri avec plus d&#39;espace</span>
+        <span class="n">col_sort</span><span class="p">,</span> <span class="n">col_button</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">columns</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+
+        <span class="k">with</span> <span class="n">col_sort</span><span class="p">:</span>
+            <span class="n">sort_mode</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">selectbox</span><span class="p">(</span>
+                <span class="s2">&quot;📊 Mode de tri:&quot;</span><span class="p">,</span>
+                <span class="n">options</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;intelligent&quot;</span><span class="p">,</span> <span class="s2">&quot;jaccard&quot;</span><span class="p">,</span> <span class="s2">&quot;cosine&quot;</span><span class="p">,</span> <span class="s2">&quot;score&quot;</span><span class="p">],</span>
+                <span class="n">format_func</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;intelligent&quot;</span><span class="p">:</span> <span class="s2">&quot;🎯 Intelligent (Jaccard + Cosine + Score)&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;jaccard&quot;</span><span class="p">:</span> <span class="s2">&quot;🥄 Priorité Jaccard (correspondances exactes)&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;cosine&quot;</span><span class="p">:</span> <span class="s2">&quot;🧠 Priorité Cosine (similarité sémantique TF-IDF)&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;score&quot;</span><span class="p">:</span> <span class="s2">&quot;⭐ Score global uniquement&quot;</span>
+                <span class="p">}[</span><span class="n">x</span><span class="p">],</span>
+                <span class="n">index</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Choisissez comment prioriser les recommandations&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">with</span> <span class="n">col_button</span><span class="p">:</span>
+            <span class="n">st</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>  <span class="c1"># Spacer</span>
+            <span class="n">recommend_button</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">button</span><span class="p">(</span>
+                <span class="s2">&quot;🔍 Obtenir les Recommandations&quot;</span><span class="p">,</span>
+                <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;primary&quot;</span><span class="p">,</span>
+                <span class="n">use_container_width</span><span class="o">=</span><span class="kc">True</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Slider pour le nombre de recommandations</span>
+        <span class="n">n_recommendations</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">slider</span><span class="p">(</span>
+            <span class="s2">&quot;🏆 Nombre de recommandations:&quot;</span><span class="p">,</span>
+            <span class="n">min_value</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_value</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+            <span class="n">key</span><span class="o">=</span><span class="s2">&quot;n_recs_slider&quot;</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Section d&#39;aide pour les algorithmes</span>
+        <span class="k">with</span> <span class="n">st</span><span class="o">.</span><span class="n">expander</span><span class="p">(</span><span class="s2">&quot;ℹ️ Comprendre les algorithmes de recommandation&quot;</span><span class="p">):</span>
+            <span class="n">st</span><span class="o">.</span><span class="n">markdown</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">            **🧠 Système hybride Jaccard + Cosine similarity :**</span>
+
+<span class="s2">            **🥄 Jaccard (Correspondances exactes) :**</span>
+<span class="s2">            - Mesure l&#39;intersection exacte entre vos ingrédients et ceux de la recette</span>
+<span class="s2">            - Formule : `|Ingrédients communs| / |Tous les ingrédients uniques|`</span>
+<span class="s2">            - Idéal pour : Utiliser exactement ce que vous avez</span>
+
+<span class="s2">            **🧠 Cosine (Similarité sémantique TF-IDF) :**</span>
+<span class="s2">            - Utilise la vectorisation TF-IDF pour capturer les relations sémantiques</span>
+<span class="s2">            - Pondère les ingrédients rares (plus discriminants)</span>
+<span class="s2">            - Idéal pour : Découvrir des recettes similaires même sans intersection exacte</span>
+
+<span class="s2">            **🎯 Intelligent (Hybride) :**</span>
+<span class="s2">            - Combine 40% Jaccard + 10% Cosine + 30% Rating + 20% Popularité</span>
+<span class="s2">            - Équilibre optimal entre précision et découverte</span>
+<span class="s2">            &quot;&quot;&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">user_input</span><span class="p">,</span> <span class="n">time_limit</span><span class="p">,</span> <span class="n">n_recommendations</span><span class="p">,</span> <span class="n">recommend_button</span><span class="p">,</span> <span class="n">sort_mode</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_handle_recommendations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">recipes_df</span><span class="p">,</span> <span class="n">interactions_df</span><span class="p">,</span> <span class="n">user_input</span><span class="p">,</span>
+                                <span class="n">time_limit</span><span class="p">,</span> <span class="n">n_recommendations</span><span class="p">,</span> <span class="n">recommend_button</span><span class="p">,</span> <span class="n">sort_mode</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gère la logique des recommandations avec le mode de tri&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">recommend_button</span> <span class="ow">and</span> <span class="n">user_input</span><span class="o">.</span><span class="n">strip</span><span class="p">():</span>
+
+            <span class="c1"># Parser les ingrédients</span>
+            <span class="n">user_ingredients</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_user_ingredients</span><span class="p">(</span><span class="n">user_input</span><span class="p">)</span>
+
+            <span class="n">st</span><span class="o">.</span><span class="n">markdown</span><span class="p">(</span><span class="s2">&quot;---&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Afficher info sur le mode de tri</span>
+            <span class="n">sort_info</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;intelligent&quot;</span><span class="p">:</span> <span class="s2">&quot;🎯 Tri intelligent hybride (Jaccard + Cosine + Score)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;jaccard&quot;</span><span class="p">:</span> <span class="s2">&quot;🥄 Priorise les correspondances exactes (Jaccard)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;cosine&quot;</span><span class="p">:</span> <span class="s2">&quot;🧠 Priorise la similarité sémantique (Cosine TF-IDF)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;score&quot;</span><span class="p">:</span> <span class="s2">&quot;⭐ Tri par score global uniquement&quot;</span>
+            <span class="p">}</span>
+            <span class="n">st</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;**Mode de tri :** </span><span class="si">{</span><span class="n">sort_info</span><span class="p">[</span><span class="n">sort_mode</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="n">st</span><span class="o">.</span><span class="n">subheader</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;🎯 Recommandations pour: </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">user_ingredients</span><span class="p">[:</span><span class="mi">5</span><span class="p">])</span><span class="si">}</span><span class="s2">&quot;</span>
+                         <span class="o">+</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot; + </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">user_ingredients</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">5</span><span class="si">}</span><span class="s2"> autres...&quot;</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">user_ingredients</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">5</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
+
+            <span class="c1"># Déterminer les paramètres de tri</span>
+            <span class="k">if</span> <span class="n">sort_mode</span> <span class="o">==</span> <span class="s2">&quot;intelligent&quot;</span><span class="p">:</span>
+                <span class="n">prioritize_jaccard</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="n">custom_sort</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">elif</span> <span class="n">sort_mode</span> <span class="o">==</span> <span class="s2">&quot;jaccard&quot;</span><span class="p">:</span>
+                <span class="n">prioritize_jaccard</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1"># On fera le tri nous-mêmes</span>
+                <span class="n">custom_sort</span> <span class="o">=</span> <span class="s2">&quot;jaccard&quot;</span>
+            <span class="k">elif</span> <span class="n">sort_mode</span> <span class="o">==</span> <span class="s2">&quot;cosine&quot;</span><span class="p">:</span>
+                <span class="n">prioritize_jaccard</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1"># On fera le tri nous-mêmes</span>
+                <span class="n">custom_sort</span> <span class="o">=</span> <span class="s2">&quot;cosine&quot;</span>
+            <span class="k">else</span><span class="p">:</span>  <span class="c1"># score</span>
+                <span class="n">prioritize_jaccard</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="n">custom_sort</span> <span class="o">=</span> <span class="s2">&quot;score&quot;</span>
+
+            <span class="c1"># Obtenir les recommandations</span>
+            <span class="k">with</span> <span class="n">st</span><span class="o">.</span><span class="n">spinner</span><span class="p">(</span><span class="s2">&quot;🔄 Génération des recommandations personnalisées...&quot;</span><span class="p">):</span>
+                <span class="n">recommendations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">recommendation_engine</span><span class="o">.</span><span class="n">get_recommendations</span><span class="p">(</span>
+                    <span class="n">recipes_df</span><span class="p">,</span> <span class="n">interactions_df</span><span class="p">,</span> <span class="n">user_ingredients</span><span class="p">,</span> <span class="n">time_limit</span><span class="p">,</span>
+                    <span class="n">n_recommendations</span><span class="p">,</span> <span class="n">prioritize_jaccard</span>
+                <span class="p">)</span>
+
+                <span class="c1"># Appliquer tri personnalisé si nécessaire</span>
+                <span class="k">if</span> <span class="n">custom_sort</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">recommendations</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">custom_sort</span> <span class="o">==</span> <span class="s2">&quot;jaccard&quot;</span><span class="p">:</span>
+                        <span class="n">recommendations</span> <span class="o">=</span> <span class="n">recommendations</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s1">&#39;jaccard&#39;</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">custom_sort</span> <span class="o">==</span> <span class="s2">&quot;cosine&quot;</span><span class="p">:</span>
+                        <span class="n">recommendations</span> <span class="o">=</span> <span class="n">recommendations</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s1">&#39;cosine&#39;</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">custom_sort</span> <span class="o">==</span> <span class="s2">&quot;score&quot;</span><span class="p">:</span>
+                        <span class="n">recommendations</span> <span class="o">=</span> <span class="n">recommendations</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s1">&#39;score&#39;</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+                    <span class="c1"># Garder seulement le nombre demandé</span>
+                    <span class="n">recommendations</span> <span class="o">=</span> <span class="n">recommendations</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="n">n_recommendations</span><span class="p">)</span>
+
+            <span class="c1"># Afficher les résultats</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_display_recommendations_stats</span><span class="p">(</span><span class="n">recommendations</span><span class="p">,</span> <span class="n">user_ingredients</span><span class="p">,</span> <span class="n">sort_mode</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">recommend_button</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">user_input</span><span class="o">.</span><span class="n">strip</span><span class="p">():</span>
+            <span class="n">st</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;⚠️ Veuillez entrer au moins un ingrédient&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="MangeTaMainApp.run">
+<a class="viewcode-back" href="../../../src.main.html#src.core.MangeTaMainApp.run">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Lance l&#39;application principale&quot;&quot;&quot;</span>
+
+        <span class="c1"># Appliquer les styles</span>
+        <span class="n">StyleManager</span><span class="o">.</span><span class="n">apply_styles</span><span class="p">()</span>
+
+        <span class="c1"># Header principal</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ui_components</span><span class="o">.</span><span class="n">display_main_header</span><span class="p">()</span>
+
+        <span class="c1"># === CHARGEMENT DES DONNÉES ===</span>
+        <span class="n">data_result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_manager</span><span class="o">.</span><span class="n">load_preprocessed_data</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">data_result</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">data_result</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">st</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+
+        <span class="n">recipes_df</span><span class="p">,</span> <span class="n">interactions_df</span> <span class="o">=</span> <span class="n">data_result</span>
+
+        <span class="c1"># === SIDEBAR - INFORMATIONS ===</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ui_components</span><span class="o">.</span><span class="n">display_sidebar_stats</span><span class="p">(</span><span class="n">recipes_df</span><span class="p">,</span> <span class="n">interactions_df</span><span class="p">)</span>
+
+        <span class="c1"># === INTERFACE PRINCIPALE ===</span>
+        <span class="n">user_input</span><span class="p">,</span> <span class="n">time_limit</span><span class="p">,</span> <span class="n">n_recommendations</span><span class="p">,</span> <span class="n">recommend_button</span><span class="p">,</span> <span class="n">sort_mode</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_handle_user_input_section</span><span class="p">()</span>
+
+        <span class="c1"># === RECOMMANDATIONS ===</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_handle_recommendations</span><span class="p">(</span>
+            <span class="n">recipes_df</span><span class="p">,</span> <span class="n">interactions_df</span><span class="p">,</span> <span class="n">user_input</span><span class="p">,</span>
+            <span class="n">time_limit</span><span class="p">,</span> <span class="n">n_recommendations</span><span class="p">,</span> <span class="n">recommend_button</span><span class="p">,</span> <span class="n">sort_mode</span>
+        <span class="p">)</span>
+
+        <span class="c1"># === FOOTER ===</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ui_components</span><span class="o">.</span><span class="n">display_footer</span><span class="p">()</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, MangeTaMain Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

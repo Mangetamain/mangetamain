@@ -1,0 +1,7 @@
+src.engines.recommendation\_engine module
+=========================================
+
+.. automodule:: src.engines.recommendation_engine
+   :members:
+   :show-inheritance:
+   :undoc-members:

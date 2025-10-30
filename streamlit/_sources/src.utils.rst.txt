@@ -1,0 +1,16 @@
+src.utils package
+=================
+
+.. automodule:: src.utils
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 4
+
+   src.utils.config
+   src.utils.styles

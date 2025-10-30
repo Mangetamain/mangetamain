@@ -1,0 +1,15 @@
+src.managers package
+====================
+
+.. automodule:: src.managers
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 4
+
+   src.managers.data_manager

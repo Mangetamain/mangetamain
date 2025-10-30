@@ -1,0 +1,7 @@
+src.ui.components module
+========================
+
+.. automodule:: src.ui.components
+   :members:
+   :show-inheritance:
+   :undoc-members:

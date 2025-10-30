@@ -1,0 +1,666 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>data_prepro &mdash; MangeTaMain Preprocessing 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            MangeTaMain Preprocessing
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">preprocessing</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">MangeTaMain Preprocessing</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Module code</a></li>
+      <li class="breadcrumb-item active">data_prepro</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for data_prepro</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">ast</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Set</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">defaultdict</span><span class="p">,</span> <span class="n">Counter</span>
+
+<span class="c1"># configuration du logger</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="RecipeFeatures">
+<a class="viewcode-back" href="../data_prepro.html#data_prepro.RecipeFeatures">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">RecipeFeatures</span><span class="p">:</span>
+    <span class="n">recipe_id</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">ingredients</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">ingredient_categories</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
+    <span class="n">normalized_ingredients_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">nutrition_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span>
+    <span class="n">tags</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">meal_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">dietary_restrictions</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">cuisine_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">n_steps</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">effort_score</span><span class="p">:</span> <span class="nb">float</span>  <span class="c1"># Score d&#39;effort (0-1)</span>
+    <span class="n">cooking_techniques</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">description_keywords</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="IngredientPreprocessor">
+<a class="viewcode-back" href="../data_prepro.html#data_prepro.IngredientPreprocessor">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">IngredientPreprocessor</span><span class="p">:</span>
+    <span class="s2">&quot;prétraitement des ingrédients avec catégorisation et normalisation via ingr_map.pkl&quot;</span>
+    <span class="n">CATEGORIES</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;proteins&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s1">&#39;chicken&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;beef&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;pork&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;fish&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;salmon&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;tuna&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;shrimp&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;turkey&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;lamb&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;egg&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;tofu&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;tempeh&#39;</span><span class="p">],</span>
+        <span class="s1">&#39;dairy&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s1">&#39;milk&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;cheese&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;butter&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;cream&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;yogurt&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;sour cream&#39;</span><span class="p">],</span>
+        <span class="s1">&#39;vegetables&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s1">&#39;tomato&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;onion&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;garlic&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;carrot&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;potato&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;broccoli&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;spinach&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;pepper&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;mushroom&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;lettuce&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;cucumber&#39;</span><span class="p">],</span>
+        <span class="s1">&#39;fruits&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s1">&#39;apple&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;banana&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;orange&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;lemon&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;strawberry&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;blueberry&#39;</span><span class="p">],</span>
+        <span class="s1">&#39;grains&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s1">&#39;flour&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;rice&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;pasta&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;bread&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;oat&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;quinoa&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;wheat&#39;</span><span class="p">],</span>
+        <span class="s1">&#39;spices&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s1">&#39;salt&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;pepper&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;cumin&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;paprika&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;cinnamon&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;basil&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;oregano&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;thyme&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;rosemary&#39;</span><span class="p">],</span>
+        <span class="s1">&#39;oils&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s1">&#39;olive oil&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;vegetable oil&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;coconut oil&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;butter&#39;</span><span class="p">],</span>
+        <span class="s1">&#39;sweeteners&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s1">&#39;sugar&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;honey&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;maple syrup&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;brown sugar&#39;</span><span class="p">]}</span>
+    <span class="c1"># MESURES A RETIRER</span>
+    <span class="n">MEASURES</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;\b(cup|tablespoon|teaspoon|pound|ounce|oz|lb|tsp|tbsp|ml|l|g|kg|pinch|dash)\b&#39;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ingr_map_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ingredient_to_category</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">category</span><span class="p">,</span> <span class="n">ingredients</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">CATEGORIES</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">ing</span> <span class="ow">in</span> <span class="n">ingredients</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ingredient_to_category</span><span class="p">[</span><span class="n">ing</span><span class="p">]</span> <span class="o">=</span> <span class="n">category</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ingr_map</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">raw_to_normalized</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">if</span> <span class="n">ingr_map_path</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_load_ingredient_map</span><span class="p">(</span><span class="n">ingr_map_path</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_load_ingredient_map</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ingr_map_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Charger le fichier CSV au lieu du fichier PKL</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ingr_map</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">ingr_map_path</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ingr_map</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+                <span class="n">raw</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;raw_ingr&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                <span class="n">normalized</span> <span class="o">=</span> <span class="n">row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;replaced&#39;</span><span class="p">,</span> <span class="n">row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;normalized&#39;</span><span class="p">,</span> <span class="n">raw</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">raw_to_normalized</span><span class="p">[</span><span class="n">raw</span><span class="p">]</span> <span class="o">=</span> <span class="n">normalized</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Ingredient map loaded successfully.&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error loading ingredient map: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Proceeding without ingredient normalization.&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="IngredientPreprocessor.normalize_ingredient">
+<a class="viewcode-back" href="../data_prepro.html#data_prepro.IngredientPreprocessor.normalize_ingredient">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">normalize_ingredient</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">raw_ingredient</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ingr_map</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Première tentative: correspondance exacte</span>
+            <span class="n">raw_lower</span> <span class="o">=</span> <span class="n">raw_ingredient</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">raw_lower</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">raw_to_normalized</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">raw_to_normalized</span><span class="p">[</span><span class="n">raw_lower</span><span class="p">]</span>
+
+            <span class="c1"># Deuxième tentative: nettoyer d&#39;abord puis chercher dans la carte</span>
+            <span class="n">pre_cleaned</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_manual_clean</span><span class="p">(</span><span class="n">raw_ingredient</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">pre_cleaned</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">raw_to_normalized</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">raw_to_normalized</span><span class="p">[</span><span class="n">pre_cleaned</span><span class="p">]</span>
+
+        <span class="c1"># Fallback: nettoyage manuel seulement</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_manual_clean</span><span class="p">(</span><span class="n">raw_ingredient</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_manual_clean</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ingredient</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="c1"># nettoyage manual si ingr_map non disponible</span>
+        <span class="n">ing</span> <span class="o">=</span> <span class="n">ingredient</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="n">ing</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\d+\.?\d*\s*/?\s*\d*&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">ing</span><span class="p">)</span>  <span class="c1"># retirer les quantités</span>
+        <span class="n">ing</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">MEASURES</span><span class="p">,</span>
+            <span class="s1">&#39;&#39;</span><span class="p">,</span>
+            <span class="n">ing</span><span class="p">,</span>
+            <span class="n">flags</span><span class="o">=</span><span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)</span>  <span class="c1"># retirer les mesures</span>
+        <span class="n">ing</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;[^\w\s-]&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">ing</span><span class="p">)</span>  <span class="c1"># retirer la ponctuation</span>
+        <span class="n">ing</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span>
+            <span class="sa">r</span><span class="s1">&#39;\b(fresh|dried|frozen|chopped|diced|sliced|minced|ground)\b&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;&#39;</span><span class="p">,</span>
+            <span class="n">ing</span><span class="p">,</span>
+            <span class="n">flags</span><span class="o">=</span><span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)</span>
+        <span class="n">ing</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ing</span><span class="o">.</span><span class="n">split</span><span class="p">())</span>  <span class="c1"># retirer les espaces multiples</span>
+        <span class="k">return</span> <span class="n">ing</span>
+
+<div class="viewcode-block" id="IngredientPreprocessor.parse_and_clean">
+<a class="viewcode-back" href="../data_prepro.html#data_prepro.IngredientPreprocessor.parse_and_clean">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">parse_and_clean</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ingredients_str</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">ingredients_list</span> <span class="o">=</span> <span class="n">ast</span><span class="o">.</span><span class="n">literal_eval</span><span class="p">(</span><span class="n">ingredients_str</span><span class="p">)</span>
+            <span class="n">cleaned</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">raw_ing</span> <span class="ow">in</span> <span class="n">ingredients_list</span><span class="p">:</span>
+                <span class="c1"># Normalisation via ingr_map (ou fallback manuel)</span>
+                <span class="n">normalized_ing</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalize_ingredient</span><span class="p">(</span><span class="n">raw_ing</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">normalized_ing</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">normalized_ing</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+                    <span class="n">cleaned</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">normalized_ing</span><span class="p">)</span>
+            <span class="c1"># Dédupliquer (car plusieurs variantes peuvent donner le même</span>
+            <span class="c1"># normalisé)</span>
+            <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">cleaned</span><span class="p">))</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">SyntaxError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erreur parsing ingredients: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">[]</span></div>
+
+
+<div class="viewcode-block" id="IngredientPreprocessor.categorize">
+<a class="viewcode-back" href="../data_prepro.html#data_prepro.IngredientPreprocessor.categorize">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">categorize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ingredients</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
+        <span class="n">categorized</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">ing</span> <span class="ow">in</span> <span class="n">ingredients</span><span class="p">:</span>
+            <span class="n">category_found</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="c1"># Chercher dans quelle catégorie se trouve l&#39;ingrédient</span>
+            <span class="k">for</span> <span class="n">base_ing</span><span class="p">,</span> <span class="n">category</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ingredient_to_category</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">base_ing</span> <span class="ow">in</span> <span class="n">ing</span><span class="p">:</span>
+                    <span class="n">categorized</span><span class="p">[</span><span class="n">category</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ing</span><span class="p">)</span>
+                    <span class="n">category_found</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="k">break</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">category_found</span><span class="p">:</span>
+                <span class="n">categorized</span><span class="p">[</span><span class="s1">&#39;other&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ing</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">categorized</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="NutritionPreprocessor">
+<a class="viewcode-back" href="../data_prepro.html#data_prepro.NutritionPreprocessor">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">NutritionPreprocessor</span><span class="p">:</span>
+    <span class="n">NUTRITION_FIELDS</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;calories&#39;</span><span class="p">,</span> <span class="s1">&#39;fat&#39;</span><span class="p">,</span> <span class="s1">&#39;total_fat&#39;</span><span class="p">,</span> <span class="s1">&#39;carbohydrates&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;sugar&#39;</span><span class="p">,</span> <span class="s1">&#39;protein&#39;</span><span class="p">,</span> <span class="s1">&#39;sodium&#39;</span><span class="p">]</span>
+
+<div class="viewcode-block" id="NutritionPreprocessor.parse_nutrition">
+<a class="viewcode-back" href="../data_prepro.html#data_prepro.NutritionPreprocessor.parse_nutrition">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">parse_nutrition</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nutrition_str</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parse la chaîne de nutrition en dictionnaire avec valeurs float.</span>
+<span class="sd">        &quot;[calories, fat, sugar, ...]&quot; -&gt; {&#39;calories&#39;: val, &#39;fat&#39;: val, ...}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">values</span> <span class="o">=</span> <span class="n">ast</span><span class="o">.</span><span class="n">literal_eval</span><span class="p">(</span><span class="n">nutrition_str</span><span class="p">)</span>
+            <span class="c1"># Vérifier que nous avons le bon nombre de valeurs</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">NutritionPreprocessor</span><span class="o">.</span><span class="n">NUTRITION_FIELDS</span><span class="p">):</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Nombre incorrect de valeurs nutritionnelles: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="p">{}</span>
+            <span class="n">nutrition_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">NutritionPreprocessor</span><span class="o">.</span><span class="n">NUTRITION_FIELDS</span><span class="p">,</span>
+                                      <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">values</span><span class="p">]))</span>
+            <span class="k">return</span> <span class="n">nutrition_dict</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">SyntaxError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erreur parsing nutrition: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">{}</span></div>
+
+
+<div class="viewcode-block" id="NutritionPreprocessor.compute_health_score">
+<a class="viewcode-back" href="../data_prepro.html#data_prepro.NutritionPreprocessor.compute_health_score">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compute_health_score</span><span class="p">(</span><span class="n">nutrition</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;construction d&#39;un score de nutrition simple (0-1)&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">nutrition</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mf">0.5</span>  <span class="c1"># score neutre si pas de données</span>
+        <span class="c1"># Calculer un score basé sur les nutriments</span>
+        <span class="n">penalties</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">penalties</span> <span class="o">+=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="n">nutrition</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;calories&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-</span> <span class="mi">600</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2000</span><span class="p">)</span>
+        <span class="n">penalties</span> <span class="o">+=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="n">nutrition</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;sugar&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-</span> <span class="mi">50</span><span class="p">)</span> <span class="o">/</span> <span class="mi">200</span><span class="p">)</span>
+        <span class="n">penalties</span> <span class="o">+=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="n">nutrition</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;sodium&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1000</span><span class="p">)</span> <span class="o">/</span> <span class="mi">4000</span><span class="p">)</span>
+
+        <span class="n">protein_bonus</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">nutrition</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;protein&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">/</span> <span class="mi">50</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">)</span>
+        <span class="n">score</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">penalties</span> <span class="o">+</span> <span class="n">protein_bonus</span><span class="p">))</span>
+        <span class="k">return</span> <span class="nb">round</span><span class="p">(</span><span class="n">score</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="TagsPreprocessor">
+<a class="viewcode-back" href="../data_prepro.html#data_prepro.TagsPreprocessor">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TagsPreprocessor</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;extraction de l&#39;information structurées a partir des tags&quot;&quot;&quot;</span>
+    <span class="n">MEAL_TYPES</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;breakfast&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;breakfast&#39;</span><span class="p">,</span> <span class="s1">&#39;brunch&#39;</span><span class="p">],</span>
+                  <span class="s1">&#39;lunch&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;lunch&#39;</span><span class="p">,</span> <span class="s1">&#39;main-dish&#39;</span><span class="p">],</span>
+                  <span class="s1">&#39;dinner&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;dinner&#39;</span><span class="p">,</span> <span class="s1">&#39;main-dish&#39;</span><span class="p">],</span>
+                  <span class="s1">&#39;snack&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;snacks&#39;</span><span class="p">,</span> <span class="s1">&#39;appetizers&#39;</span><span class="p">]}</span>
+    <span class="n">DIETARY</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;vegetarian&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;vegetarian&#39;</span><span class="p">,</span> <span class="s1">&#39;vegan&#39;</span><span class="p">],</span>
+        <span class="s1">&#39;vegan&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;vegan&#39;</span><span class="p">],</span>
+        <span class="s1">&#39;low-carb&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;low-carb&#39;</span><span class="p">,</span> <span class="s1">&#39;low-carbohydrate&#39;</span><span class="p">],</span>
+        <span class="s1">&#39;gluten-free&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;gluten-free&#39;</span><span class="p">],</span>
+        <span class="s1">&#39;dairy-free&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;dairy-free&#39;</span><span class="p">,</span> <span class="s1">&#39;lactose-free&#39;</span><span class="p">],</span>
+        <span class="s1">&#39;healthy&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;healthy&#39;</span><span class="p">,</span> <span class="s1">&#39;low-fat&#39;</span><span class="p">,</span> <span class="s1">&#39;low-sodium&#39;</span><span class="p">,</span> <span class="s1">&#39;low-calorie&#39;</span><span class="p">]</span>
+    <span class="p">}</span>
+    <span class="n">CUISINES</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s1">&#39;mexican&#39;</span><span class="p">,</span> <span class="s1">&#39;italian&#39;</span><span class="p">,</span> <span class="s1">&#39;chinese&#39;</span><span class="p">,</span> <span class="s1">&#39;indian&#39;</span><span class="p">,</span> <span class="s1">&#39;french&#39;</span><span class="p">,</span> <span class="s1">&#39;thai&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;japanese&#39;</span><span class="p">,</span> <span class="s1">&#39;greek&#39;</span><span class="p">,</span> <span class="s1">&#39;spanish&#39;</span><span class="p">,</span> <span class="s1">&#39;american&#39;</span><span class="p">,</span> <span class="s1">&#39;mediterranean&#39;</span>
+    <span class="p">]</span>
+
+<div class="viewcode-block" id="TagsPreprocessor.parse_tags">
+<a class="viewcode-back" href="../data_prepro.html#data_prepro.TagsPreprocessor.parse_tags">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">parse_tags</span><span class="p">(</span><span class="n">tags_str</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;nettoyer les tags&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">tags</span> <span class="o">=</span> <span class="n">ast</span><span class="o">.</span><span class="n">literal_eval</span><span class="p">(</span><span class="n">tags_str</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">{</span><span class="n">tag</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">tag</span> <span class="ow">in</span> <span class="n">tags</span><span class="p">}</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">SyntaxError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erreur parsing tags: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="nb">set</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="TagsPreprocessor.extract_meal_type">
+<a class="viewcode-back" href="../data_prepro.html#data_prepro.TagsPreprocessor.extract_meal_type">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">extract_meal_type</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">tags</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="k">for</span> <span class="n">meal_type</span><span class="p">,</span> <span class="n">keywords</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">MEAL_TYPES</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">keyword</span> <span class="ow">in</span> <span class="n">tags</span> <span class="k">for</span> <span class="n">keyword</span> <span class="ow">in</span> <span class="n">keywords</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">meal_type</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="TagsPreprocessor.extract_dietary_restriction">
+<a class="viewcode-back" href="../data_prepro.html#data_prepro.TagsPreprocessor.extract_dietary_restriction">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">extract_dietary_restriction</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">tags</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="n">restrictions</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">restriction</span><span class="p">,</span> <span class="n">keywords</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">DIETARY</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">keyword</span> <span class="ow">in</span> <span class="n">tags</span> <span class="k">for</span> <span class="n">keyword</span> <span class="ow">in</span> <span class="n">keywords</span><span class="p">):</span>
+                <span class="n">restrictions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">restriction</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">restrictions</span></div>
+
+
+<div class="viewcode-block" id="TagsPreprocessor.extract_cuisine_type">
+<a class="viewcode-back" href="../data_prepro.html#data_prepro.TagsPreprocessor.extract_cuisine_type">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">extract_cuisine_type</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">tags</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="k">for</span> <span class="n">cuisine</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">CUISINES</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">cuisine</span> <span class="ow">in</span> <span class="n">tags</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">cuisine</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="TagsPreprocessor.extract_time_constrained">
+<a class="viewcode-back" href="../data_prepro.html#data_prepro.TagsPreprocessor.extract_time_constrained">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">extract_time_constrained</span><span class="p">(</span><span class="n">tags</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="n">time_patterns</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;15-minutes-or-less&#39;</span><span class="p">:</span> <span class="mi">15</span><span class="p">,</span>
+            <span class="s1">&#39;30-minutes-or-less&#39;</span><span class="p">:</span> <span class="mi">30</span><span class="p">,</span>
+            <span class="s1">&#39;60-minutes-or-less&#39;</span><span class="p">:</span> <span class="mi">60</span><span class="p">,</span>
+            <span class="s1">&#39;4-hours-or-less&#39;</span><span class="p">:</span> <span class="mi">240</span>
+        <span class="p">}</span>
+        <span class="k">for</span> <span class="n">pattern</span><span class="p">,</span> <span class="n">minutes</span> <span class="ow">in</span> <span class="n">time_patterns</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">pattern</span> <span class="ow">in</span> <span class="n">tags</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">minutes</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="StepsPreprocessor">
+<a class="viewcode-back" href="../data_prepro.html#data_prepro.StepsPreprocessor">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">StepsPreprocessor</span><span class="p">:</span>
+    <span class="n">COOKING_TECHNIQUES</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;bake&#39;</span><span class="p">,</span> <span class="s1">&#39;boil&#39;</span><span class="p">,</span> <span class="s1">&#39;fry&#39;</span><span class="p">,</span> <span class="s1">&#39;grill&#39;</span><span class="p">,</span> <span class="s1">&#39;roast&#39;</span><span class="p">,</span> <span class="s1">&#39;steam&#39;</span><span class="p">,</span> <span class="s1">&#39;sauté&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;simmer&#39;</span><span class="p">,</span> <span class="s1">&#39;mix&#39;</span><span class="p">,</span> <span class="s1">&#39;blend&#39;</span><span class="p">,</span> <span class="s1">&#39;whisk&#39;</span><span class="p">,</span> <span class="s1">&#39;chop&#39;</span><span class="p">,</span> <span class="s1">&#39;dice&#39;</span><span class="p">,</span> <span class="s1">&#39;marinate&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;season&#39;</span><span class="p">,</span> <span class="s1">&#39;garnish&#39;</span><span class="p">,</span> <span class="s1">&#39;broil&#39;</span><span class="p">,</span> <span class="s1">&#39;poach&#39;</span><span class="p">,</span> <span class="s1">&#39;braise&#39;</span><span class="p">,</span> <span class="s1">&#39;stir-fry&#39;</span>
+    <span class="p">}</span>
+
+<div class="viewcode-block" id="StepsPreprocessor.parse_steps">
+<a class="viewcode-back" href="../data_prepro.html#data_prepro.StepsPreprocessor.parse_steps">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">parse_steps</span><span class="p">(</span><span class="n">steps_str</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">steps</span> <span class="o">=</span> <span class="n">ast</span><span class="o">.</span><span class="n">literal_eval</span><span class="p">(</span><span class="n">steps_str</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">step</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="n">steps</span><span class="p">]</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">SyntaxError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erreur parsing steps: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">[]</span></div>
+
+
+<div class="viewcode-block" id="StepsPreprocessor.extract_techniques">
+<a class="viewcode-back" href="../data_prepro.html#data_prepro.StepsPreprocessor.extract_techniques">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">extract_techniques</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">steps</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="n">techniques</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="n">steps</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">technique</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">COOKING_TECHNIQUES</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">technique</span> <span class="ow">in</span> <span class="n">step</span><span class="p">:</span>
+                    <span class="n">techniques</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">technique</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">techniques</span></div>
+
+
+<div class="viewcode-block" id="StepsPreprocessor.compute_effort_score">
+<a class="viewcode-back" href="../data_prepro.html#data_prepro.StepsPreprocessor.compute_effort_score">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compute_effort_score</span><span class="p">(</span><span class="n">n_steps</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">steps</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="c1"># score d&#39;effort normalisé 0=facile, 1=difficile</span>
+        <span class="n">step_factor</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">n_steps</span> <span class="o">/</span> <span class="mi">20</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.6</span>
+        <span class="n">avg_length</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">step</span><span class="o">.</span><span class="n">split</span><span class="p">())</span>
+                             <span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="n">steps</span><span class="p">])</span> <span class="k">if</span> <span class="n">steps</span> <span class="k">else</span> <span class="mi">0</span>
+        <span class="n">length_factor</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">avg_length</span> <span class="o">/</span> <span class="mi">30</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.3</span>
+        <span class="n">complex_words</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;carefully&#39;</span><span class="p">,</span> <span class="s1">&#39;slowly&#39;</span><span class="p">,</span> <span class="s1">&#39;constantly&#39;</span><span class="p">,</span> <span class="s1">&#39;meanwhile&#39;</span><span class="p">,</span>
+                         <span class="s1">&#39;simultaneously&#39;</span><span class="p">,</span> <span class="s1">&#39;gradually&#39;</span><span class="p">]</span>
+        <span class="n">complexity_count</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">any</span><span class="p">(</span><span class="n">word</span> <span class="ow">in</span> <span class="n">step</span> <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">complex_words</span><span class="p">)</span>
+                               <span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="n">steps</span><span class="p">)</span>
+        <span class="n">complexity_factor</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">complexity_count</span> <span class="o">/</span> <span class="mi">5</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.1</span>
+
+        <span class="k">return</span> <span class="n">step_factor</span> <span class="o">+</span> <span class="n">length_factor</span> <span class="o">+</span> <span class="n">complexity_factor</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="DescriptionPreprocessor">
+<a class="viewcode-back" href="../data_prepro.html#data_prepro.DescriptionPreprocessor">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">DescriptionPreprocessor</span><span class="p">:</span>
+<div class="viewcode-block" id="DescriptionPreprocessor.extract_keywords">
+<a class="viewcode-back" href="../data_prepro.html#data_prepro.DescriptionPreprocessor.extract_keywords">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">extract_keywords</span><span class="p">(</span><span class="n">description</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">top_n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">description</span> <span class="ow">or</span> <span class="n">pd</span><span class="o">.</span><span class="n">isna</span><span class="p">(</span><span class="n">description</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">[]</span>
+
+        <span class="c1"># Nettoyage</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="n">description</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;[^\w\s]&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>
+        <span class="n">words</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+
+        <span class="c1"># Stop words basiques</span>
+        <span class="n">stop_words</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;the&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;a&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;an&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;and&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;or&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;but&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;in&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;on&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;at&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;to&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;for&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;of&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;with&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;by&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;from&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;this&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;that&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;is&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;are&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;was&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;were&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;be&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;been&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;being&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;recipe&#39;</span><span class="p">}</span>
+
+        <span class="c1"># Filtrer et compter</span>
+        <span class="n">filtered_words</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">w</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">words</span> <span class="k">if</span> <span class="n">w</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">stop_words</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">w</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">]</span>
+        <span class="n">word_counts</span> <span class="o">=</span> <span class="n">Counter</span><span class="p">(</span><span class="n">filtered_words</span><span class="p">)</span>
+
+        <span class="c1"># Retourner les plus fréquents</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">word</span> <span class="k">for</span> <span class="n">word</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">word_counts</span><span class="o">.</span><span class="n">most_common</span><span class="p">(</span><span class="n">top_n</span><span class="p">)]</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="RecipePreprocessor">
+<a class="viewcode-back" href="../data_prepro.html#data_prepro.RecipePreprocessor">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">RecipePreprocessor</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Orchestrateur principal du prétraitement.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ingr_map_path</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="c1"># ✅ CORRECTION: Gérer les chemins de façon robuste</span>
+        <span class="k">if</span> <span class="n">ingr_map_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Chemin par défaut relatif au fichier actuel</span>
+            <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+            <span class="n">current_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span>
+            <span class="n">ingr_map_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">current_dir</span><span class="p">,</span> <span class="s1">&#39;ingr_map.csv&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Vérifier que le fichier existe</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">ingr_map_path</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;⚠️ Fichier de mapping introuvable: </span><span class="si">{</span><span class="n">ingr_map_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Utilisation sans mapping des ingrédients&quot;</span><span class="p">)</span>
+            <span class="n">ingr_map_path</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">ingredients_prep</span> <span class="o">=</span> <span class="n">IngredientPreprocessor</span><span class="p">(</span>
+            <span class="n">ingr_map_path</span><span class="o">=</span><span class="n">ingr_map_path</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nutrition_prep</span> <span class="o">=</span> <span class="n">NutritionPreprocessor</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tags_prep</span> <span class="o">=</span> <span class="n">TagsPreprocessor</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">steps_prep</span> <span class="o">=</span> <span class="n">StepsPreprocessor</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">description_prep</span> <span class="o">=</span> <span class="n">DescriptionPreprocessor</span><span class="p">()</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;RecipePreprocessor initialisé avec succès&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="RecipePreprocessor.preprocess_recipe">
+<a class="viewcode-back" href="../data_prepro.html#data_prepro.RecipePreprocessor.preprocess_recipe">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">preprocess_recipe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">row</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RecipeFeatures</span><span class="p">:</span>
+
+        <span class="c1"># Ingrédients</span>
+        <span class="n">ingredients_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ingredients_prep</span><span class="o">.</span><span class="n">parse_and_clean</span><span class="p">(</span>
+            <span class="n">row</span><span class="p">[</span><span class="s1">&#39;ingredients&#39;</span><span class="p">])</span>
+        <span class="n">ingredients_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">ingredients_list</span><span class="p">)</span>
+        <span class="n">ingredient_categories</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ingredients_prep</span><span class="o">.</span><span class="n">categorize</span><span class="p">(</span>
+            <span class="n">ingredients_list</span><span class="p">)</span>
+
+        <span class="c1"># Nutrition</span>
+        <span class="n">nutrition_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nutrition_prep</span><span class="o">.</span><span class="n">parse_nutrition</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s1">&#39;nutrition&#39;</span><span class="p">])</span>
+
+        <span class="c1"># Tags</span>
+        <span class="n">tags</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tags_prep</span><span class="o">.</span><span class="n">parse_tags</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s1">&#39;tags&#39;</span><span class="p">])</span>
+        <span class="n">meal_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tags_prep</span><span class="o">.</span><span class="n">extract_meal_type</span><span class="p">(</span><span class="n">tags</span><span class="p">)</span>
+        <span class="n">dietary</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tags_prep</span><span class="o">.</span><span class="n">extract_dietary_restriction</span><span class="p">(</span><span class="n">tags</span><span class="p">)</span>
+        <span class="n">cuisine</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tags_prep</span><span class="o">.</span><span class="n">extract_cuisine_type</span><span class="p">(</span><span class="n">tags</span><span class="p">)</span>
+
+        <span class="c1"># Steps</span>
+        <span class="n">steps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">steps_prep</span><span class="o">.</span><span class="n">parse_steps</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s1">&#39;steps&#39;</span><span class="p">])</span>
+        <span class="n">n_steps</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;n_steps&#39;</span><span class="p">]</span>
+        <span class="n">effort_score</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">steps_prep</span><span class="o">.</span><span class="n">compute_effort_score</span><span class="p">(</span><span class="n">n_steps</span><span class="p">,</span> <span class="n">steps</span><span class="p">)</span>
+        <span class="n">techniques</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">steps_prep</span><span class="o">.</span><span class="n">extract_techniques</span><span class="p">(</span><span class="n">steps</span><span class="p">)</span>
+
+        <span class="c1"># Description</span>
+        <span class="n">keywords</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">description_prep</span><span class="o">.</span><span class="n">extract_keywords</span><span class="p">(</span>
+            <span class="n">row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;description&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">RecipeFeatures</span><span class="p">(</span>
+            <span class="n">recipe_id</span><span class="o">=</span><span class="n">row</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">],</span>
+            <span class="n">ingredients</span><span class="o">=</span><span class="n">ingredients_set</span><span class="p">,</span>
+            <span class="n">ingredient_categories</span><span class="o">=</span><span class="n">ingredient_categories</span><span class="p">,</span>
+            <span class="n">normalized_ingredients_list</span><span class="o">=</span><span class="n">ingredients_list</span><span class="p">,</span>
+            <span class="n">nutrition_dict</span><span class="o">=</span><span class="n">nutrition_dict</span><span class="p">,</span>
+            <span class="n">tags</span><span class="o">=</span><span class="n">tags</span><span class="p">,</span>
+            <span class="n">meal_type</span><span class="o">=</span><span class="n">meal_type</span><span class="p">,</span>
+            <span class="n">dietary_restrictions</span><span class="o">=</span><span class="n">dietary</span><span class="p">,</span>
+            <span class="n">cuisine_type</span><span class="o">=</span><span class="n">cuisine</span><span class="p">,</span>
+            <span class="n">n_steps</span><span class="o">=</span><span class="n">n_steps</span><span class="p">,</span>
+            <span class="n">effort_score</span><span class="o">=</span><span class="n">effort_score</span><span class="p">,</span>
+            <span class="n">cooking_techniques</span><span class="o">=</span><span class="n">techniques</span><span class="p">,</span>
+            <span class="n">description_keywords</span><span class="o">=</span><span class="n">keywords</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="RecipePreprocessor.preprocess_dataframe">
+<a class="viewcode-back" href="../data_prepro.html#data_prepro.RecipePreprocessor.preprocess_dataframe">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">preprocess_dataframe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Début du prétraitement de </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">)</span><span class="si">}</span><span class="s2"> recettes&quot;</span><span class="p">)</span>
+        <span class="n">features_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">features</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">preprocess_recipe</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+                <span class="n">features_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">features</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="p">(</span><span class="n">idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="mi">1000</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Prétraitement: </span><span class="si">{</span><span class="n">idx</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">)</span><span class="si">}</span><span class="s2"> recettes&quot;</span><span class="p">)</span>
+
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Erreur prétraitement recette </span><span class="si">{</span><span class="n">row</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">continue</span>
+
+        <span class="c1"># Conversion en DataFrame</span>
+        <span class="n">processed_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([</span><span class="nb">vars</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">features_list</span><span class="p">])</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Prétraitement terminé: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">processed_df</span><span class="p">)</span><span class="si">}</span><span class="s2"> recettes traitées&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">processed_df</span></div>
+</div>
+
+
+
+<span class="c1"># Exemple d&#39;utilisation</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="c1"># Charger le dataset</span>
+    <span class="c1"># df = pd.read_csv(&#39;RAW_recipes.csv&#39;)</span>
+
+    <span class="c1"># Initialiser le preprocessor</span>
+    <span class="n">preprocessor</span> <span class="o">=</span> <span class="n">RecipePreprocessor</span><span class="p">()</span>
+
+    <span class="c1"># Prétraiter</span>
+    <span class="c1"># processed_df = preprocessor.preprocess_dataframe(df)</span>
+
+    <span class="c1"># Sauvegarder</span>
+    <span class="c1"># processed_df.to_csv(&#39;data/processed/recipes_features.csv&#39;, index=False)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Module de prétraitement prêt à l&#39;emploi!&quot;</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, MangeTaMain Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

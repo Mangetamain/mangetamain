@@ -1,0 +1,7 @@
+src.utils.styles module
+=======================
+
+.. automodule:: src.utils.styles
+   :members:
+   :show-inheritance:
+   :undoc-members:

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>MangeTaMain : Documentation du projet</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background-color: #f8f9fa; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        .card { 
+            background: white; 
+            border: 1px solid #ddd; 
+            border-radius: 8px; 
+            padding: 20px; 
+            margin: 20px 0; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .header { text-align: center; margin-bottom: 40px; }
+        h1 { color: #333; margin: 0; }
+        h2 { color: #555; margin-top: 0; }
+        .subtitle { color: #666; margin-top: 10px; }
+        a { color: #007bff; text-decoration: none; margin-right: 15px; }
+        a:hover { text-decoration: underline; }
+        .links { margin-top: 15px; }
+        .coverage-badge { margin-top: 10px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .full-width { grid-column: 1 / -1; }
+        @media (max-width: 768px) { 
+            .grid { grid-template-columns: 1fr; }
+            .full-width { grid-column: 1; }
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .status-success { background-color: #28a745; }
+        .status-warning { background-color: #ffc107; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1> MangeTaMain : Documentation du projet</h1>
+            <p class="subtitle">Système de recommandation de recettes personnalisées</p>
+        </div>
+        
+        <div class="grid">
+            <div class="card">
+                <h2><span class="status-indicator status-success"></span> Module Preprocessing</h2>
+                <p>Préparation des données, feature engineering et entraînement des modèles.</p>
+                <div class="links">
+                    <a href="preprocessing/index.html">📖 Documentation API</a>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2><span class="status-indicator status-success"></span>Application Streamlit</h2>
+                <p>Interface utilisateur et moteur de recommandation.</p>
+                <div class="links">
+                    <a href="streamlit/index.html"> Documentation API</a>
+                </div>
+            </div>
+            
+            <div class="card full-width">
+                <h2><span class="status-indicator status-success"></span>Rapport de couverture des tests</h2>
+                <p>Rapports de tests d'intégration et couverture de code.</p>
+                <div class="coverage-badge">
+                    <img src="coverage/coverage.svg" alt="Test Coverage" style="margin-right: 10px;" onerror="this.style.display='none'">
+                </div>
+                <div class="links">
+                    <a href="coverage/index.html">Rapport de Couverture</a>
+                </div>
+            </div>
+            
+           
+        </div>
+    
+    </div>
+</body>
+</html>

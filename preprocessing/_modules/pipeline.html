@@ -1,0 +1,412 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pipeline &mdash; MangeTaMain Preprocessing 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            MangeTaMain Preprocessing
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">preprocessing</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">MangeTaMain Preprocessing</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pipeline</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pipeline</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Pipeline SIMPLE pour MangeTaMain - Preprocessing complet du dataset</span>
+<span class="sd">Injection directe dans Streamlit</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">multiprocessing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Pool</span><span class="p">,</span> <span class="n">cpu_count</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">yaml</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">data_prepro</span><span class="w"> </span><span class="kn">import</span> <span class="n">RecipePreprocessor</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">data_load</span><span class="w"> </span><span class="kn">import</span> <span class="n">fetch_data</span><span class="p">,</span> <span class="n">load_data</span>
+<span class="c1"># Configuration logging</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span>
+    <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span>
+    <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%(asctime)s</span><span class="s1"> - </span><span class="si">%(levelname)s</span><span class="s1"> - </span><span class="si">%(message)s</span><span class="s1">&#39;</span><span class="p">,</span>
+    <span class="n">handlers</span><span class="o">=</span><span class="p">[</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">FileHandler</span><span class="p">(</span><span class="s1">&#39;preprocessing.log&#39;</span><span class="p">),</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">StreamHandler</span><span class="p">()</span>
+    <span class="p">]</span>
+<span class="p">)</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="c1"># Imports locaux</span>
+
+
+<div class="viewcode-block" id="process_chunk">
+<a class="viewcode-back" href="../pipeline.html#pipeline.process_chunk">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">process_chunk</span><span class="p">(</span><span class="n">chunk_data</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Traite un chunk de recettes&quot;&quot;&quot;</span>
+    <span class="n">chunk</span><span class="p">,</span> <span class="n">chunk_id</span> <span class="o">=</span> <span class="n">chunk_data</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">preprocessor</span> <span class="o">=</span> <span class="n">RecipePreprocessor</span><span class="p">()</span>
+        <span class="n">processed</span> <span class="o">=</span> <span class="n">preprocessor</span><span class="o">.</span><span class="n">preprocess_dataframe</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; Chunk </span><span class="si">{</span><span class="n">chunk_id</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">processed</span><span class="p">)</span><span class="si">}</span><span class="s2"> recettes traitées&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">processed</span>
+
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; Erreur chunk </span><span class="si">{</span><span class="n">chunk_id</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="run_complete_preprocessing">
+<a class="viewcode-back" href="../pipeline.html#pipeline.run_complete_preprocessing">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">run_complete_preprocessing</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Pipeline complet pour tout le dataset</span>
+<span class="sd">    Résultat directement utilisable par Streamlit</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot; PREPROCESSING COMPLET - MANGETAMAIN&quot;</span><span class="p">)</span>
+    <span class="n">start_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+
+    <span class="c1"># === ÉTAPE 1: CHARGEMENT DES DONNÉES ===</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot; 1. Chargement des données Kaggle...&quot;</span><span class="p">)</span>
+
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;config.yaml&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+    <span class="c1"># Télécharger et charger</span>
+    <span class="n">dataset_id</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;datasets&#39;</span><span class="p">][</span><span class="s1">&#39;recipes&#39;</span><span class="p">][</span><span class="s1">&#39;dataset_id&#39;</span><span class="p">]</span>
+    <span class="n">dataset_path</span> <span class="o">=</span> <span class="n">fetch_data</span><span class="p">(</span><span class="n">dataset_id</span><span class="p">)</span>
+
+    <span class="n">files_to_load</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">config</span><span class="p">[</span><span class="s1">&#39;datasets&#39;</span><span class="p">][</span><span class="s1">&#39;recipes&#39;</span><span class="p">][</span><span class="s1">&#39;file_name&#39;</span><span class="p">],</span>
+        <span class="n">config</span><span class="p">[</span><span class="s1">&#39;datasets&#39;</span><span class="p">][</span><span class="s1">&#39;interactions&#39;</span><span class="p">][</span><span class="s1">&#39;file_name&#39;</span><span class="p">]</span>
+    <span class="p">]</span>
+
+    <span class="n">dfs</span> <span class="o">=</span> <span class="n">load_data</span><span class="p">(</span><span class="n">dataset_path</span><span class="p">,</span> <span class="n">files_to_load</span><span class="p">)</span>
+    <span class="n">recipes_df</span> <span class="o">=</span> <span class="n">dfs</span><span class="p">[</span><span class="s1">&#39;RAW_recipes.csv&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">interactions_df</span> <span class="o">=</span> <span class="n">dfs</span><span class="p">[</span><span class="s1">&#39;RAW_interactions.csv&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot; Dataset complet chargé:&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   - Recettes: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">recipes_df</span><span class="p">)</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   - Interactions: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">interactions_df</span><span class="p">)</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># === ÉTAPE 2: NETTOYAGE PRÉALABLE ===</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;🧹 2. Nettoyage préalable des données...&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Supprimer les recettes sans ingrédients</span>
+    <span class="n">initial_count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">recipes_df</span><span class="p">)</span>
+    <span class="n">recipes_df</span> <span class="o">=</span> <span class="n">recipes_df</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;ingredients&#39;</span><span class="p">])</span>
+    <span class="n">recipes_df</span> <span class="o">=</span> <span class="n">recipes_df</span><span class="p">[</span><span class="n">recipes_df</span><span class="p">[</span><span class="s1">&#39;ingredients&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;[]&#39;</span><span class="p">]</span>
+    <span class="c1"># Au moins quelques caractères</span>
+    <span class="n">recipes_df</span> <span class="o">=</span> <span class="n">recipes_df</span><span class="p">[</span><span class="n">recipes_df</span><span class="p">[</span><span class="s1">&#39;ingredients&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">len</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">10</span><span class="p">]</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; Filtrage: </span><span class="si">{</span><span class="n">initial_count</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> → </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">recipes_df</span><span class="p">)</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> recettes&quot;</span><span class="p">)</span>
+
+    <span class="c1"># === ÉTAPE 3: PREPROCESSING PARALLÈLE ===</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;⚡ 3. Preprocessing parallèle du dataset complet...&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Configuration parallèle</span>
+    <span class="n">n_cores</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">cpu_count</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>  <span class="c1"># Utiliser tous les cores - 1</span>
+    <span class="n">chunk_size</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">2000</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">recipes_df</span><span class="p">)</span> <span class="o">//</span> <span class="p">(</span><span class="n">n_cores</span> <span class="o">*</span> <span class="mi">3</span><span class="p">))</span>  <span class="c1"># Chunks optimaux</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; Configuration: </span><span class="si">{</span><span class="n">n_cores</span><span class="si">}</span><span class="s2"> cores, chunks de </span><span class="si">{</span><span class="n">chunk_size</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Créer les chunks</span>
+    <span class="n">chunks</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">recipes_df</span><span class="p">),</span> <span class="n">chunk_size</span><span class="p">):</span>
+        <span class="n">end_idx</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="n">chunk_size</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">recipes_df</span><span class="p">))</span>
+        <span class="n">chunk</span> <span class="o">=</span> <span class="n">recipes_df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">end_idx</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">chunks</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">chunk</span><span class="p">,</span> <span class="n">i</span> <span class="o">//</span> <span class="n">chunk_size</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">chunks</span><span class="p">)</span><span class="si">}</span><span class="s2"> chunks créés pour </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">recipes_df</span><span class="p">)</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> recettes&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Traitement parallèle</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot; Démarrage du traitement parallèle...&quot;</span><span class="p">)</span>
+
+    <span class="k">with</span> <span class="n">Pool</span><span class="p">(</span><span class="n">n_cores</span><span class="p">)</span> <span class="k">as</span> <span class="n">pool</span><span class="p">:</span>
+        <span class="n">processed_chunks</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">process_chunk</span><span class="p">,</span> <span class="n">chunks</span><span class="p">)</span>
+
+    <span class="c1"># Filtrer les chunks vides</span>
+    <span class="n">processed_chunks</span> <span class="o">=</span> <span class="p">[</span><span class="n">chunk</span> <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">processed_chunks</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">chunk</span><span class="o">.</span><span class="n">empty</span><span class="p">]</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">processed_chunks</span><span class="p">)</span><span class="si">}</span><span class="s2"> chunks traités avec succès&quot;</span><span class="p">)</span>
+
+    <span class="c1"># === ÉTAPE 4: ASSEMBLAGE FINAL ===</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot; 4. Assemblage des données preprocessées...&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Combiner tous les chunks</span>
+    <span class="n">processed_recipes</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span>
+        <span class="n">processed_chunks</span><span class="p">,</span>
+        <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">sort</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="c1"># Merger avec les données originales nécessaires pour Streamlit</span>
+    <span class="n">merge_columns</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s1">&#39;id&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;name&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;minutes&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;n_steps&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;description&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;n_ingredients&#39;</span><span class="p">]</span>
+    <span class="n">processed_recipes</span> <span class="o">=</span> <span class="n">processed_recipes</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span>
+        <span class="n">recipes_df</span><span class="p">[</span><span class="n">merge_columns</span><span class="p">]</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="s1">&#39;recipe_id&#39;</span><span class="p">}),</span>
+        <span class="n">on</span><span class="o">=</span><span class="s1">&#39;recipe_id&#39;</span><span class="p">,</span>
+        <span class="n">how</span><span class="o">=</span><span class="s1">&#39;left&#39;</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Colonnes pour compatibilité avec le système de recommandation</span>
+    <span class="n">processed_recipes</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">processed_recipes</span><span class="p">[</span><span class="s1">&#39;recipe_id&#39;</span><span class="p">]</span>
+
+    <span class="c1"># S&#39;assurer que la colonne normalized_ingredients existe</span>
+    <span class="k">if</span> <span class="s1">&#39;normalized_ingredients_list&#39;</span> <span class="ow">in</span> <span class="n">processed_recipes</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="n">processed_recipes</span><span class="p">[</span><span class="s1">&#39;normalized_ingredients&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">processed_recipes</span><span class="p">[</span><span class="s1">&#39;normalized_ingredients_list&#39;</span><span class="p">]</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; Dataset final: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">processed_recipes</span><span class="p">)</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> recettes preprocessées&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; Colonnes: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">processed_recipes</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># === ÉTAPE 5: SAUVEGARDE POUR STREAMLIT ===</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot; 5. Sauvegarde pour injection Streamlit...&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Créer le répertoire de sortie</span>
+    <span class="n">output_dir</span> <span class="o">=</span> <span class="s2">&quot;/shared_data&quot;</span>  <span class="c1"># Dossier partagé avec Streamlit</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># Sauvegarde principale (Pickle pour rapidité)</span>
+    <span class="n">recipes_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="s2">&quot;recipes_processed.pkl&quot;</span><span class="p">)</span>
+    <span class="n">processed_recipes</span><span class="o">.</span><span class="n">to_pickle</span><span class="p">(</span><span class="n">recipes_path</span><span class="p">)</span>
+
+    <span class="n">interactions_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="s2">&quot;interactions.pkl&quot;</span><span class="p">)</span>
+    <span class="n">interactions_df</span><span class="o">.</span><span class="n">to_pickle</span><span class="p">(</span><span class="n">interactions_path</span><span class="p">)</span>
+
+    <span class="c1"># Sauvegarde CSV pour debug</span>
+    <span class="n">processed_recipes</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="n">output_dir</span><span class="p">,</span>
+            <span class="s2">&quot;recipes_processed.csv&quot;</span><span class="p">),</span>
+        <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">interactions_df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="n">output_dir</span><span class="p">,</span>
+            <span class="s2">&quot;interactions.csv&quot;</span><span class="p">),</span>
+        <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; Données sauvegardées dans </span><span class="si">{</span><span class="n">output_dir</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># === ÉTAPE 6: MÉTADONNÉES ET VALIDATION ===</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot; 6. Génération des métadonnées...&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Validation rapide</span>
+    <span class="n">has_ingredients</span> <span class="o">=</span> <span class="n">processed_recipes</span><span class="p">[</span><span class="s1">&#39;normalized_ingredients&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
+        <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+    <span class="n">duration</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span>
+    <span class="c1"># 6. Génération des métadonnées</span>
+    <span class="n">metadata</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;processing_date&#39;</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(),</span>
+        <span class="s1">&#39;total_recipes_input&#39;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span>
+            <span class="nb">len</span><span class="p">(</span><span class="n">recipes_df</span><span class="p">)),</span>
+        <span class="s1">&#39;total_recipes_processed&#39;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span>
+            <span class="nb">len</span><span class="p">(</span><span class="n">processed_recipes</span><span class="p">)),</span>
+        <span class="s1">&#39;recipes_with_ingredients&#39;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">has_ingredients</span><span class="p">),</span>
+        <span class="s1">&#39;total_interactions&#39;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span>
+            <span class="nb">len</span><span class="p">(</span><span class="n">interactions_df</span><span class="p">)),</span>
+        <span class="s1">&#39;processing_time_minutes&#39;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span>
+            <span class="nb">round</span><span class="p">(</span>
+                <span class="n">duration</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span> <span class="o">/</span> <span class="mi">60</span><span class="p">,</span>
+                <span class="mi">2</span><span class="p">)),</span>
+        <span class="s1">&#39;cores_used&#39;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">n_cores</span><span class="p">),</span>
+        <span class="s1">&#39;chunks_processed&#39;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span>
+            <span class="nb">len</span><span class="p">(</span><span class="n">processed_chunks</span><span class="p">)),</span>
+        <span class="s1">&#39;success_rate&#39;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span>
+            <span class="nb">round</span><span class="p">(</span>
+                <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">processed_recipes</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">recipes_df</span><span class="p">))</span> <span class="o">*</span> <span class="mi">100</span><span class="p">,</span>
+                <span class="mi">2</span><span class="p">)),</span>
+        <span class="s1">&#39;ready_for_streamlit&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
+
+    <span class="c1"># Sauvegarder les métadonnées (format JSON plus fiable)</span>
+    <span class="n">metadata_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="s2">&quot;preprocessing_metadata.json&quot;</span><span class="p">)</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">metadata_path</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">metadata</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="c1"># === RÉSUMÉ FINAL ===</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;🎉 PREPROCESSING COMPLET TERMINÉ !&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;⏱️ Durée totale: </span><span class="si">{</span><span class="n">duration</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;📊 Résultats:&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   - Recettes preprocessées: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">processed_recipes</span><span class="p">)</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   - Avec ingrédients normalisés: </span><span class="si">{</span><span class="n">has_ingredients</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   - Interactions: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">interactions_df</span><span class="p">)</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   - Taux de succès: </span><span class="si">{</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;success_rate&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">%&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   - Vitesse: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">processed_recipes</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">duration</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2"> recettes/seconde&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;🎯 Données prêtes pour Streamlit dans </span><span class="si">{</span><span class="n">output_dir</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">metadata</span></div>
+
+
+
+<div class="viewcode-block" id="verify_streamlit_data">
+<a class="viewcode-back" href="../pipeline.html#pipeline.verify_streamlit_data">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">verify_streamlit_data</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Vérification que les données sont prêtes pour Streamlit&quot;&quot;&quot;</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;🔍 Vérification des données pour Streamlit...&quot;</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1"># Charger les données</span>
+        <span class="n">recipes_path</span> <span class="o">=</span> <span class="s2">&quot;/shared_data/recipes_processed.pkl&quot;</span>
+        <span class="n">interactions_path</span> <span class="o">=</span> <span class="s2">&quot;/shared_data/interactions.pkl&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">recipes_path</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span>
+                <span class="n">interactions_path</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;❌ Fichiers de données manquants&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="n">recipes</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_pickle</span><span class="p">(</span><span class="n">recipes_path</span><span class="p">)</span>
+        <span class="n">interactions</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_pickle</span><span class="p">(</span><span class="n">interactions_path</span><span class="p">)</span>
+
+        <span class="c1"># Vérifications essentielles</span>
+        <span class="n">required_columns</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s1">&#39;id&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;recipe_id&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;name&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;normalized_ingredients&#39;</span><span class="p">]</span>
+        <span class="n">missing</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">col</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">required_columns</span> <span class="k">if</span> <span class="n">col</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">recipes</span><span class="o">.</span><span class="n">columns</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">missing</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;❌ Colonnes manquantes: </span><span class="si">{</span><span class="n">missing</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="c1"># Vérifier les ingrédients</span>
+        <span class="n">has_ingredients</span> <span class="o">=</span> <span class="n">recipes</span><span class="p">[</span><span class="s1">&#39;normalized_ingredients&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
+            <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;✅ Validation réussie:&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   - Recettes: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">recipes</span><span class="p">)</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   - Avec ingrédients: </span><span class="si">{</span><span class="n">has_ingredients</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   - Interactions: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">interactions</span><span class="p">)</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;❌ Erreur validation: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Exécution du pipeline complet&quot;&quot;&quot;</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1"># Pipeline complet</span>
+        <span class="n">metadata</span> <span class="o">=</span> <span class="n">run_complete_preprocessing</span><span class="p">()</span>
+
+        <span class="c1"># Vérification automatique</span>
+        <span class="k">if</span> <span class="n">verify_streamlit_data</span><span class="p">():</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;🎊 SUCCÈS COMPLET - Streamlit prêt !&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="s2">&quot;🚀 Vous pouvez maintenant lancer: docker-compose up streamlit-app&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;❌ Problème de validation des données&quot;</span><span class="p">)</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;❌ ÉCHEC du pipeline: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">traceback</span>
+        <span class="n">traceback</span><span class="o">.</span><span class="n">print_exc</span><span class="p">()</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, MangeTaMain Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

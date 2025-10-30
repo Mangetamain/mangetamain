@@ -1,0 +1,7 @@
+src.core.app module
+===================
+
+.. automodule:: src.core.app
+   :members:
+   :show-inheritance:
+   :undoc-members:

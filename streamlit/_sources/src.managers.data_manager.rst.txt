@@ -1,0 +1,7 @@
+src.managers.data\_manager module
+=================================
+
+.. automodule:: src.managers.data_manager
+   :members:
+   :show-inheritance:
+   :undoc-members:

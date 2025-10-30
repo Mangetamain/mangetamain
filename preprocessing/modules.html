@@ -1,0 +1,203 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>preprocessing &mdash; MangeTaMain Preprocessing 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=8d563738"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="data_load module" href="data_load.html" />
+    <link rel="prev" title="MangeTaMain Preprocessing Documentation" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            MangeTaMain Preprocessing
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">preprocessing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="data_load.html">data_load module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data_prepro.html">data_prepro module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pipeline.html">pipeline module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reco_score.html">reco_score module</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">MangeTaMain Preprocessing</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">preprocessing</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/modules.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="preprocessing">
+<h1>preprocessing<a class="headerlink" href="#preprocessing" title="Link to this heading"></a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="data_load.html">data_load module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="data_load.html#data_load.fetch_data"><code class="docutils literal notranslate"><span class="pre">fetch_data()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="data_load.html#data_load.load_data"><code class="docutils literal notranslate"><span class="pre">load_data()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="data_prepro.html">data_prepro module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="data_prepro.html#data_prepro.DescriptionPreprocessor"><code class="docutils literal notranslate"><span class="pre">DescriptionPreprocessor</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="data_prepro.html#data_prepro.DescriptionPreprocessor.extract_keywords"><code class="docutils literal notranslate"><span class="pre">DescriptionPreprocessor.extract_keywords()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="data_prepro.html#data_prepro.IngredientPreprocessor"><code class="docutils literal notranslate"><span class="pre">IngredientPreprocessor</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="data_prepro.html#data_prepro.IngredientPreprocessor.CATEGORIES"><code class="docutils literal notranslate"><span class="pre">IngredientPreprocessor.CATEGORIES</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_prepro.html#data_prepro.IngredientPreprocessor.MEASURES"><code class="docutils literal notranslate"><span class="pre">IngredientPreprocessor.MEASURES</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_prepro.html#data_prepro.IngredientPreprocessor.categorize"><code class="docutils literal notranslate"><span class="pre">IngredientPreprocessor.categorize()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_prepro.html#data_prepro.IngredientPreprocessor.normalize_ingredient"><code class="docutils literal notranslate"><span class="pre">IngredientPreprocessor.normalize_ingredient()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_prepro.html#data_prepro.IngredientPreprocessor.parse_and_clean"><code class="docutils literal notranslate"><span class="pre">IngredientPreprocessor.parse_and_clean()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="data_prepro.html#data_prepro.NutritionPreprocessor"><code class="docutils literal notranslate"><span class="pre">NutritionPreprocessor</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="data_prepro.html#data_prepro.NutritionPreprocessor.NUTRITION_FIELDS"><code class="docutils literal notranslate"><span class="pre">NutritionPreprocessor.NUTRITION_FIELDS</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_prepro.html#data_prepro.NutritionPreprocessor.compute_health_score"><code class="docutils literal notranslate"><span class="pre">NutritionPreprocessor.compute_health_score()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_prepro.html#data_prepro.NutritionPreprocessor.parse_nutrition"><code class="docutils literal notranslate"><span class="pre">NutritionPreprocessor.parse_nutrition()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="data_prepro.html#data_prepro.RecipeFeatures"><code class="docutils literal notranslate"><span class="pre">RecipeFeatures</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="data_prepro.html#data_prepro.RecipeFeatures.cooking_techniques"><code class="docutils literal notranslate"><span class="pre">RecipeFeatures.cooking_techniques</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_prepro.html#data_prepro.RecipeFeatures.cuisine_type"><code class="docutils literal notranslate"><span class="pre">RecipeFeatures.cuisine_type</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_prepro.html#data_prepro.RecipeFeatures.description_keywords"><code class="docutils literal notranslate"><span class="pre">RecipeFeatures.description_keywords</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_prepro.html#data_prepro.RecipeFeatures.dietary_restrictions"><code class="docutils literal notranslate"><span class="pre">RecipeFeatures.dietary_restrictions</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_prepro.html#data_prepro.RecipeFeatures.effort_score"><code class="docutils literal notranslate"><span class="pre">RecipeFeatures.effort_score</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_prepro.html#data_prepro.RecipeFeatures.ingredient_categories"><code class="docutils literal notranslate"><span class="pre">RecipeFeatures.ingredient_categories</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_prepro.html#data_prepro.RecipeFeatures.ingredients"><code class="docutils literal notranslate"><span class="pre">RecipeFeatures.ingredients</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_prepro.html#data_prepro.RecipeFeatures.meal_type"><code class="docutils literal notranslate"><span class="pre">RecipeFeatures.meal_type</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_prepro.html#data_prepro.RecipeFeatures.n_steps"><code class="docutils literal notranslate"><span class="pre">RecipeFeatures.n_steps</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_prepro.html#data_prepro.RecipeFeatures.normalized_ingredients_list"><code class="docutils literal notranslate"><span class="pre">RecipeFeatures.normalized_ingredients_list</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_prepro.html#data_prepro.RecipeFeatures.nutrition_dict"><code class="docutils literal notranslate"><span class="pre">RecipeFeatures.nutrition_dict</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_prepro.html#data_prepro.RecipeFeatures.recipe_id"><code class="docutils literal notranslate"><span class="pre">RecipeFeatures.recipe_id</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_prepro.html#data_prepro.RecipeFeatures.tags"><code class="docutils literal notranslate"><span class="pre">RecipeFeatures.tags</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="data_prepro.html#data_prepro.RecipePreprocessor"><code class="docutils literal notranslate"><span class="pre">RecipePreprocessor</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="data_prepro.html#data_prepro.RecipePreprocessor.preprocess_dataframe"><code class="docutils literal notranslate"><span class="pre">RecipePreprocessor.preprocess_dataframe()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_prepro.html#data_prepro.RecipePreprocessor.preprocess_recipe"><code class="docutils literal notranslate"><span class="pre">RecipePreprocessor.preprocess_recipe()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="data_prepro.html#data_prepro.StepsPreprocessor"><code class="docutils literal notranslate"><span class="pre">StepsPreprocessor</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="data_prepro.html#data_prepro.StepsPreprocessor.COOKING_TECHNIQUES"><code class="docutils literal notranslate"><span class="pre">StepsPreprocessor.COOKING_TECHNIQUES</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_prepro.html#data_prepro.StepsPreprocessor.compute_effort_score"><code class="docutils literal notranslate"><span class="pre">StepsPreprocessor.compute_effort_score()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_prepro.html#data_prepro.StepsPreprocessor.extract_techniques"><code class="docutils literal notranslate"><span class="pre">StepsPreprocessor.extract_techniques()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_prepro.html#data_prepro.StepsPreprocessor.parse_steps"><code class="docutils literal notranslate"><span class="pre">StepsPreprocessor.parse_steps()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="data_prepro.html#data_prepro.TagsPreprocessor"><code class="docutils literal notranslate"><span class="pre">TagsPreprocessor</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="data_prepro.html#data_prepro.TagsPreprocessor.CUISINES"><code class="docutils literal notranslate"><span class="pre">TagsPreprocessor.CUISINES</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_prepro.html#data_prepro.TagsPreprocessor.DIETARY"><code class="docutils literal notranslate"><span class="pre">TagsPreprocessor.DIETARY</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_prepro.html#data_prepro.TagsPreprocessor.MEAL_TYPES"><code class="docutils literal notranslate"><span class="pre">TagsPreprocessor.MEAL_TYPES</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_prepro.html#data_prepro.TagsPreprocessor.extract_cuisine_type"><code class="docutils literal notranslate"><span class="pre">TagsPreprocessor.extract_cuisine_type()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_prepro.html#data_prepro.TagsPreprocessor.extract_dietary_restriction"><code class="docutils literal notranslate"><span class="pre">TagsPreprocessor.extract_dietary_restriction()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_prepro.html#data_prepro.TagsPreprocessor.extract_meal_type"><code class="docutils literal notranslate"><span class="pre">TagsPreprocessor.extract_meal_type()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_prepro.html#data_prepro.TagsPreprocessor.extract_time_constrained"><code class="docutils literal notranslate"><span class="pre">TagsPreprocessor.extract_time_constrained()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_prepro.html#data_prepro.TagsPreprocessor.parse_tags"><code class="docutils literal notranslate"><span class="pre">TagsPreprocessor.parse_tags()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="pipeline.html">pipeline module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pipeline.html#pipeline.process_chunk"><code class="docutils literal notranslate"><span class="pre">process_chunk()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="pipeline.html#pipeline.run_complete_preprocessing"><code class="docutils literal notranslate"><span class="pre">run_complete_preprocessing()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="pipeline.html#pipeline.verify_streamlit_data"><code class="docutils literal notranslate"><span class="pre">verify_streamlit_data()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="reco_score.html">reco_score module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="reco_score.html#reco_score.RecipScorer"><code class="docutils literal notranslate"><span class="pre">RecipScorer</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="reco_score.html#reco_score.RecipeScorer"><code class="docutils literal notranslate"><span class="pre">RecipeScorer</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="reco_score.html#reco_score.RecipeScorer.compute_base_score"><code class="docutils literal notranslate"><span class="pre">RecipeScorer.compute_base_score()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="reco_score.html#reco_score.RecipeScorer.cosine_similarity_batch"><code class="docutils literal notranslate"><span class="pre">RecipeScorer.cosine_similarity_batch()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="reco_score.html#reco_score.RecipeScorer.cosine_similarity_single"><code class="docutils literal notranslate"><span class="pre">RecipeScorer.cosine_similarity_single()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="reco_score.html#reco_score.RecipeScorer.jaccard_similarity"><code class="docutils literal notranslate"><span class="pre">RecipeScorer.jaccard_similarity()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="reco_score.html#reco_score.RecipeScorer.normalize_series"><code class="docutils literal notranslate"><span class="pre">RecipeScorer.normalize_series()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="reco_score.html#reco_score.RecipeScorer.recommend"><code class="docutils literal notranslate"><span class="pre">RecipeScorer.recommend()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="MangeTaMain Preprocessing Documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="data_load.html" class="btn btn-neutral float-right" title="data_load module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, MangeTaMain Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
