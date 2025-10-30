@@ -4,7 +4,7 @@
 
 ## 📊 Ressources Complémentaires
 
-🗺️ **[Schéma d'Architecture Interactive](./recipe_script_diagram.html)** - Visualisation complète du système de prétraitement des recettes
+🗺️ **[Schéma d'Architecture Interactive](https://htmlpreview.github.io/?https://github.com/Mangetamain/mangetamain/blob/main/docs/recipe_script_diagram.html)** - Visualisation complète du système de prétraitement des recettes
 
 ---
 
