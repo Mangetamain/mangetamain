@@ -1,125 +1,143 @@
 # Formulations mathématiques — indicateurs pour visualisation
 
-Voici les formules mathématiques précises et compactes pour chaque indicateur utilisé dans le scoring. Utilisez-les dans la doc ou pour afficher dans l'UI.
+---
+
+## 📊 Ressources Complémentaires
+
+🗺️ **[Schéma d'Architecture Interactive](./recipe_script_diagram.html)** - Visualisation complète du système de prétraitement des recettes
 
 ---
 
 ## 1. Jaccard (similarité d'ensembles)
-Soient A et B des ensembles d'ingrédients :
-- Jaccard(A,B) = |A ∩ B| / |A ∪ B|
-- Cas particulier : si |A ∪ B| = 0 alors Jaccard(A,B) = 0
 
-Formule :
-$$J(A,B) = \frac{|A \cap B|}{|A \cup B|}$$
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\color{white}J(A,B)=\frac{|A\cap%20B|}{|A\cup%20B|}" alt="Jaccard Formula"/>
+</p>
 
----
+**Définition :** Soient A et B des ensembles d'ingrédients, cette formule mesure la proportion d'ingrédients communs sur le total d'ingrédients uniques.
 
-## 2. TF–IDF (poids d'un terme) et similarité cosinus
-Pour un terme $t$, document $d$ (recette) et corpus de $N$ documents :
-- TF (optionnel normalisé) : $\mathrm{tf}_{t,d} = \frac{f_{t,d}}{\sum_{t'} f_{t',d}}$ ou simple fréquence $f_{t,d}$
-- IDF (lissage pour éviter div/0) : $\mathrm{idf}_t = \log\left(\frac{N}{1 + \mathrm{df}_t}\right)$
-- TF–IDF : $w_{t,d} = \mathrm{tf}_{t,d} \times \mathrm{idf}_t$
-
-Vectorisation :
-- vecteur recette $v_d = [w_{t_1,d}, w_{t_2,d}, \dots]$
-- vecteur requête utilisateur $q = [w_{t_1,q}, w_{t_2,q}, \dots]$
-
-Similarité cosinus :
-$$\cos(v_d,q) = \frac{v_d \cdot q}{\|v_d\|_2 \; \|q\|_2}$$
-
-- Si $\|v_d\|_2=0$ ou $\|q\|_2=0$ alors $\cos(v_d,q)=0$.
-
-Batch (toutes recettes) : normaliser tous les vecteurs pour accélérer
-$$\text{cosines} = V \cdot \hat{q} \quad\text{où}\quad \hat{q}=\frac{q}{\|q\|_2},\; \hat{V}=\frac{V}{\|V\|_2\text{ (ligne par ligne)}}$$
+**Cas particulier :** Si |A ∪ B| = 0 alors J(A,B) = 0
 
 ---
 
-## 3. Moyenne des notes (rating) et normalisation Min–Max
-Soit la moyenne des notes d'une recette $r$ :
-$$\bar{r} = \frac{1}{m}\sum_{i=1}^m r_i$$
+## 2. TF–IDF et similarité cosinus
 
-Min–Max normalization sur tout l'ensemble :
-$$\tilde{r} = \begin{cases}
-\frac{\bar{r}-\min(\bar{r})}{\max(\bar{r})-\min(\bar{r})}, & \text{si } \max\neq\min\\[8pt]
-0.5, & \text{si } \max=\min
-\end{cases}$$
+**TF-IDF :**
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\color{white}w_{t,d}=\mathrm{tf}_{t,d}\times\mathrm{idf}_t" alt="TF-IDF Formula"/>
+</p>
+
+**Définition :** Pour un terme t, document d (recette) et corpus de N documents, le poids TF-IDF combine la fréquence locale (tf) et l'importance globale (idf).
+
+**Similarité cosinus :**
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\color{white}\cos(v_d,q)=\frac{v_d\cdot%20q}{\|v_d\|_2\;\|q\|_2}" alt="Cosine Similarity"/>
+</p>
+
+**Définition :** Mesure l'angle entre les vecteurs TF-IDF de la requête utilisateur et d'une recette. Valeurs dans [0,1] pour vecteurs non-négatifs.
 
 ---
 
-## 4. Popularité (nombre d'interactions) — normalisation Min–Max
-Soit $n_r$ le nombre d'interactions (avis) pour la recette :
-$$\text{pop}_r = \begin{cases}
-\frac{n_r-\min(n)}{\max(n)-\min(n)}, & \max(n)\neq\min(n)\\[6pt]
-0.0, & \text{si } \max(n)=\min(n)
-\end{cases}$$
+## 3. Moyenne des notes et normalisation Min–Max
+
+**Moyenne des notes :**
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\color{white}\bar{r}=\frac{1}{m}\sum_{i=1}^m%20r_i" alt="Average Rating"/>
+</p>
+
+**Définition :** Calcule la note moyenne d'une recette sur m évaluations.
+
+**Normalisation Min-Max :**
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\color{white}\tilde{r}=\begin{cases}\frac{\bar{r}-\min(\bar{r})}{\max(\bar{r})-\min(\bar{r})}&\text{si%20}\max\neq\min\\0.5&\text{si%20}\max=\min\end{cases}" alt="Min-Max Normalization"/>
+</p>
+
+**Définition :** Transforme les notes dans l'intervalle [0,1] pour permettre la combinaison avec d'autres indicateurs.
+
+---
+
+## 4. Popularité (normalisation du nombre d'interactions)
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\color{white}\text{pop}_r=\frac{n_r-\min(n)}{\max(n)-\min(n)}" alt="Popularity Normalization"/>
+</p>
+
+**Définition :** Normalise le nombre d'avis/interactions n_r d'une recette dans [0,1]. Mesure la confiance basée sur le volume d'interactions.
 
 ---
 
 ## 5. Mise à l'échelle robuste (optionnelle)
-Pour réduire l'effet des outliers, utiliser log-scaling avant Min–Max :
-$$n'_r = \log(1 + n_r),\quad \text{puis Min–Max sur } n'_r$$
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\color{white}n'_r=\log(1+n_r)" alt="Log Scaling"/>
+</p>
+
+**Définition :** Pour réduire l'effet des outliers, appliquer une transformation logarithmique avant la normalisation Min-Max.
 
 ---
 
-## 6. Score hybride final (combinatoire linéaire)
-Combiner les composantes normalisées en un score unique :
-$$\text{score}_r = \alpha \cdot J(A,B_r) + \delta \cdot \cos(v_{B_r},q) + \beta \cdot \tilde{r} + \gamma \cdot \text{pop}_r$$
+## 6. Score hybride final
 
-avec contraintes usuelles : $\alpha,\beta,\gamma,\delta \ge 0$. Optionnel : normaliser les poids pour $\alpha+\beta+\gamma+\delta=1$.
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\color{white}\text{score}_r=\alpha\cdot%20J(A,B_r)+\delta\cdot\cos(v_{B_r},q)+\beta\cdot\tilde{r}+\gamma\cdot\text{pop}_r" alt="Hybrid Score"/>
+</p>
 
-Exemple (valeurs par défaut) :
-$\alpha=0.4,\ \beta=0.3,\ \gamma=0.2,\ \delta=0.1$
+**Définition :** Combine les quatre indicateurs avec des poids configurables pour obtenir un score final de recommandation.
 
----
-
-## 7. Traitement des cas limites (formules à appliquer)
-- Divisions par zéro : retourner 0 ou valeur neutre (ex. 0.5 pour ratings uniformes).
-- Données manquantes : remplacer par valeur neutre avant combinaison.
-- Préférence utilisateur : appliquer multiplicateur $w_{\text{pref}} \in [0,2]$ sur certaines composantes si souhaité.
+**Valeurs par défaut :** α=0.4 (Jaccard), β=0.3 (Rating), γ=0.2 (Popularité), δ=0.1 (Cosinus)
 
 ---
 
-## 8. Métriques d'évaluation (formulations)
-- **Precision_k** : Proportion d'éléments pertinents parmi les k premiers résultats
-$$\mathrm{P_k} = \frac{1}{k}\sum_{i=1}^k \mathbf{1}[\text{rel}_i = 1]$$
+## 7. Traitement des cas limites
 
-- **Recall_k** : Proportion d'éléments pertinents récupérés parmi tous les éléments pertinents
-$$\mathrm{R_k} = \frac{|\{\text{éléments pertinents dans les k premiers}\}|}{|\{\text{tous les éléments pertinents}\}|}$$
-
-- **DCG_k** (Discounted Cumulative Gain) et **NDCG@k** :
-$$\mathrm{DCG_k} = \sum_{i=1}^k \frac{2^{\text{rel}_i}-1}{\log_2(i+1)}$$
-$$\mathrm{NDCG_k} = \frac{\mathrm{DCG_k}}{\mathrm{IDCG_k}}$$
-où $\mathrm{IDCG_k}$ est le DCG idéal (tri par pertinence décroissante)
-
-- **MRR** (Mean Reciprocal Rank) : Position du premier élément pertinent
-$$\mathrm{MRR} = \frac{1}{|Q|}\sum_{q=1}^{|Q|} \frac{1}{\text{rank}_q}$$
+**Gestion des erreurs courantes :**
+- **Divisions par zéro :** Retourner 0 ou valeur neutre (ex. 0.5 pour ratings uniformes)
+- **Données manquantes :** Remplacer par valeur neutre avant combinaison
+- **Listes vides :** Jaccard = 0, Cosinus utilise fallback vers Jaccard
+- **Échec TF-IDF :** Fallback automatique vers similarité de Jaccard
 
 ---
 
-## 9. Recommandations d'implémentation pratique
-- **TF-IDF optimisé** : Pré-calculer la matrice TF-IDF pour tout le corpus de recettes, vectoriser seulement la requête utilisateur à la volée
-- **Normalisation robuste** : Toujours normaliser les composantes en [0,1] avant combinaison linéaire
-- **Gestion des erreurs** : En cas d'échec TF-IDF (sklearn indisponible), utiliser Jaccard comme fallback
-- **Logging** : Ajouter des logs pour les cas où $\max=\min$ dans Min-Max
-- **Performance** : Limiter `max_features` dans TF-IDF pour contrôler la mémoire (ex: 1000)
-- **Tests A/B** : Évaluer différents poids $(\alpha, \beta, \gamma, \delta)$ avec des métriques réelles
+## 8. Métriques d'évaluation
+
+**Precision@k :**
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\color{white}\mathrm{P@k}=\frac{1}{k}\sum_{i=1}^k\mathbf{1}[\text{rel}_i=1]" alt="Precision at k"/>
+</p>
+
+**Définition :** Proportion d'éléments pertinents parmi les k premiers résultats recommandés.
+
+**NDCG@k :**
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\color{white}\mathrm{NDCG@k}=\frac{\mathrm{DCG@k}}{\mathrm{IDCG@k}}" alt="NDCG at k"/>
+</p>
+
+**Définition :** Normalized Discounted Cumulative Gain, prend en compte la position des éléments pertinents (plus haut = mieux).
+
+**MRR :**
+<p align="center">
+<img src="https://latex.codecogs.com/svg.latex?\color{white}\mathrm{MRR}=\frac{1}{|Q|}\sum_{q=1}^{|Q|}\frac{1}{\text{rank}_q}" alt="Mean Reciprocal Rank"/>
+</p>
+
+**Définition :** Mean Reciprocal Rank, mesure la position moyenne du premier élément pertinent trouvé.
 
 ---
 
-## 10. Contexte d'utilisation dans le projet
-Ce système de scoring hybride est implémenté dans `preprocessing/reco_score.py` avec :
-- Fallback automatique si sklearn n'est pas disponible
-- Support des deux modes : batch (plusieurs recettes) et unitaire (une recette)
-- Normalisation robuste des ratings et popularité
-- Logging détaillé pour le debugging
+## 9. Recommandations d'usage
 
-**Utilisation recommandée** : Ajuster les poids selon le contexte :
-- **Découverte** : Augmenter $\gamma$ (popularité) pour des recettes sûres
-- **Personnalisation** : Augmenter $\alpha$ (Jaccard) pour correspondance exacte d'ingrédients
-- **Qualité** : Augmenter $\beta$ (rating) pour privilégier les meilleures recettes
-- **Sémantique** : Augmenter $\delta$ (cosine) pour similarité lexicale avancée
+**Ajustement des poids selon le contexte :**
+
+| Contexte | Poids à augmenter | Objectif |
+|----------|-------------------|----------|
+| **🔍 Découverte** | γ (Popularité) | Recommander des recettes éprouvées |
+| **🎯 Personnalisation** | α (Jaccard) | Correspondance exacte d'ingrédients |
+| **⭐ Qualité** | β (Rating) | Privilégier les meilleures notes |
+| **🧠 Sémantique** | δ (Cosinus) | Similarité lexicale avancée |
+
+**Implémentation pratique :**
+- Toujours normaliser les composantes en [0,1] avant combinaison
+- Prévoir des fallbacks pour l'indisponibilité de sklearn
+- Instrumenter avec des métriques Precision@k et Coverage
+- Tester différents poids via A/B testing
 
 ---
-
-
-

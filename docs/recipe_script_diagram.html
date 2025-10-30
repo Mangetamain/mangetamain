@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schéma Architecture</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            margin: 0;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 40px;
+            font-size: 28px;
+        }
+        
+        .diagram {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+        
+        .flow-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            border-left: 5px solid #3498db;
+        }
+        
+        .section-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #2980b9;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .flow-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+        
+        .box {
+            padding: 15px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            flex: 1;
+            min-width: 200px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .box:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        .input-box {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+        }
+        
+        .process-box {
+            background: #d1ecf1;
+            border: 2px solid #17a2b8;
+        }
+        
+        .output-box {
+            background: #d4edda;
+            border: 2px solid #28a745;
+        }
+        
+        .class-box {
+            background: #e7e3ff;
+            border: 2px solid #6f42c1;
+        }
+        
+        .method-box {
+            background: #ffe5e5;
+            border: 2px solid #dc3545;
+            font-size: 13px;
+            padding: 10px 15px;
+        }
+        
+        .arrow {
+            font-size: 24px;
+            color: #3498db;
+            font-weight: bold;
+        }
+        
+        .arrow-down {
+            text-align: center;
+            font-size: 30px;
+            color: #3498db;
+            margin: 5px 0;
+        }
+        
+        .code {
+            font-family: 'Courier New', monospace;
+            background: #f1f1f1;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+        
+        .example {
+            background: white;
+            padding: 12px;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-size: 13px;
+            border-left: 3px solid #3498db;
+        }
+        
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .category-box {
+            background: white;
+            padding: 12px;
+            border-radius: 6px;
+            border-left: 4px solid #16a085;
+            font-size: 13px;
+        }
+        
+        .category-title {
+            font-weight: bold;
+            color: #16a085;
+            margin-bottom: 5px;
+        }
+        
+        .badge {
+            display: inline-block;
+            background: #3498db;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            margin-right: 5px;
+            margin-top: 3px;
+        }
+        
+        .legend {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+        }
+        
+        .legend-color {
+            width: 30px;
+            height: 20px;
+            border-radius: 4px;
+            border: 2px solid;
+        }
+        
+        @media print {
+            body {
+                background: white;
+            }
+            .no-print {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🗺️ Schéma d'Architecture du Système de Prétraitement de Recettes</h1>
+        
+        <div class="diagram">
+            <!-- Section 1: Structure des Classes -->
+            <div class="flow-section">
+                <div class="section-title">
+                    📦 1. STRUCTURE DES CLASSES
+                </div>
+                
+                <div class="grid-2">
+                    <div class="class-box">
+                        <strong>📋 RecipeFeatures (dataclass)</strong>
+                        <div class="example">
+                            <strong>Stockage des caractéristiques extraites :</strong><br>
+                            • recipe_id: int<br>
+                            • ingredients: Set[str]<br>
+                            • ingredient_categories: Dict<br>
+                            • nutrition_dict: Dict<br>
+                            • tags: Set[str]<br>
+                            • meal_type: Optional[str]<br>
+                            • dietary_restrictions: List[str]<br>
+                            • cuisine_type: Optional[str]<br>
+                            • n_steps: int<br>
+                            • effort_score: float<br>
+                            • cooking_techniques: Set[str]<br>
+                            • description_keywords: List[str]
+                        </div>
+                    </div>
+                    
+                    <div class="class-box">
+                        <strong>⚙️ IngredientPreprocessor (classe)</strong>
+                        <div class="example">
+                            <strong>Prétraitement des ingrédients :</strong><br>
+                            • CATEGORIES: 8 catégories prédéfinies<br>
+                            • MEASURES: patterns de mesures<br>
+                            • ingr_map: mapping de normalisation<br>
+                            • raw_to_normalized: cache rapide<br><br>
+                            <strong>Méthodes :</strong><br>
+                            • __init__()<br>
+                            • normalize_ingredient()<br>
+                            • parse_and_clean()<br>
+                            • categorize()
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 2: Flux Principal -->
+            <div class="flow-section">
+                <div class="section-title">
+                    🔄 2. FLUX DE TRAITEMENT PRINCIPAL
+                </div>
+                
+                <div class="flow-row">
+                    <div class="input-box box">
+                        <strong>📥 ENTRÉE</strong><br>
+                        Chaîne brute d'ingrédients
+                        <div class="example">
+                            <span class="code">["2 cups flour", "1/2 cup chopped onions", "3 eggs"]</span>
+                        </div>
+                    </div>
+                    <div class="arrow">→</div>
+                    <div class="process-box box">
+                        <strong>🔧 PARSING</strong><br>
+                        parse_and_clean()
+                        <div class="example">
+                            1. ast.literal_eval()<br>
+                            2. Itération sur chaque élément<br>
+                            3. Normalisation individuelle
+                        </div>
+                    </div>
+                    <div class="arrow">→</div>
+                    <div class="output-box box">
+                        <strong>📤 SORTIE</strong><br>
+                        Liste normalisée
+                        <div class="example">
+                            <span class="code">["flour", "onion", "egg"]</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="arrow-down">↓</div>
+                
+                <div class="flow-row">
+                    <div class="process-box box">
+                        <strong>🏷️ CATÉGORISATION</strong><br>
+                        categorize()
+                        <div class="example">
+                            Recherche de correspondance<br>
+                            avec les catégories prédéfinies
+                        </div>
+                    </div>
+                    <div class="arrow">→</div>
+                    <div class="output-box box">
+                        <strong>✅ RÉSULTAT FINAL</strong><br>
+                        Dict catégorisé
+                        <div class="example">
+                            <span class="code">{<br>
+                            &nbsp;&nbsp;"grains": ["flour"],<br>
+                            &nbsp;&nbsp;"vegetables": ["onion"],<br>
+                            &nbsp;&nbsp;"proteins": ["egg"]<br>
+                            }</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 3: Normalisation -->
+            <div class="flow-section">
+                <div class="section-title">
+                    🧹 3. PROCESSUS DE NORMALISATION
+                </div>
+                
+                <div class="flow-row">
+                    <div class="input-box box">
+                        <strong>Ingrédient brut</strong>
+                        <div class="example">
+                            <span class="code">"2 cups fresh chopped onions"</span>
+                        </div>
+                    </div>
+                    <div class="arrow">→</div>
+                    <div class="process-box box" style="flex: 2;">
+                        <strong>🔀 CHOIX DE MÉTHODE</strong>
+                        <div class="example">
+                            <strong style="color: #28a745;">Option A: ingr_map.pkl disponible</strong><br>
+                            → Lookup dans raw_to_normalized<br>
+                            → Retour immédiat si trouvé<br><br>
+                            
+                            <strong style="color: #dc3545;">Option B: Fallback manuel</strong><br>
+                            1. Retrait quantités: <span class="code">\d+\.?\d*</span><br>
+                            2. Retrait mesures: <span class="code">cup|tbsp|oz...</span><br>
+                            3. Retrait ponctuation<br>
+                            4. Retrait descripteurs: <span class="code">fresh|chopped...</span><br>
+                            5. Normalisation espaces
+                        </div>
+                    </div>
+                    <div class="arrow">→</div>
+                    <div class="output-box box">
+                        <strong>Résultat</strong>
+                        <div class="example">
+                            <span class="code">"onion"</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 4: Catégories -->
+            <div class="flow-section">
+                <div class="section-title">
+                    🗂️ 4. CATÉGORIES D'INGRÉDIENTS
+                </div>
+                
+                <div class="grid-3">
+                    <div class="category-box">
+                        <div class="category-title">🍗 Protéines</div>
+                        <span class="badge">chicken</span>
+                        <span class="badge">beef</span>
+                        <span class="badge">fish</span>
+                        <span class="badge">egg</span>
+                        <span class="badge">tofu</span>
+                    </div>
+                    
+                    <div class="category-box">
+                        <div class="category-title">🥛 Produits laitiers</div>
+                        <span class="badge">milk</span>
+                        <span class="badge">cheese</span>
+                        <span class="badge">butter</span>
+                        <span class="badge">cream</span>
+                    </div>
+                    
+                    <div class="category-box">
+                        <div class="category-title">🥕 Légumes</div>
+                        <span class="badge">tomato</span>
+                        <span class="badge">onion</span>
+                        <span class="badge">carrot</span>
+                        <span class="badge">pepper</span>
+                    </div>
+                    
+                    <div class="category-box">
+                        <div class="category-title">🍎 Fruits</div>
+                        <span class="badge">apple</span>
+                        <span class="badge">banana</span>
+                        <span class="badge">orange</span>
+                        <span class="badge">lemon</span>
+                    </div>
+                    
+                    <div class="category-box">
+                        <div class="category-title">🌾 Céréales</div>
+                        <span class="badge">flour</span>
+                        <span class="badge">rice</span>
+                        <span class="badge">pasta</span>
+                        <span class="badge">bread</span>
+                    </div>
+                    
+                    <div class="category-box">
+                        <div class="category-title">🌶️ Épices</div>
+                        <span class="badge">salt</span>
+                        <span class="badge">pepper</span>
+                        <span class="badge">cumin</span>
+                        <span class="badge">basil</span>
+                    </div>
+                    
+                    <div class="category-box">
+                        <div class="category-title">🫒 Huiles</div>
+                        <span class="badge">olive oil</span>
+                        <span class="badge">vegetable oil</span>
+                        <span class="badge">butter</span>
+                    </div>
+                    
+                    <div class="category-box">
+                        <div class="category-title">🍯 Sucrants</div>
+                        <span class="badge">sugar</span>
+                        <span class="badge">honey</span>
+                        <span class="badge">maple syrup</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 5: Méthodes -->
+            <div class="flow-section">
+                <div class="section-title">
+                    🔧 5. MÉTHODES DÉTAILLÉES
+                </div>
+                
+                <div class="grid-2">
+                    <div class="method-box">
+                        <strong>__init__(ingr_map_path)</strong>
+                        <div class="example">
+                            <strong>Initialisation :</strong><br>
+                            1. Créer ingredient_to_category<br>
+                            2. Si ingr_map_path fourni :<br>
+                            &nbsp;&nbsp;→ Charger ingr_map.pkl<br>
+                            &nbsp;&nbsp;→ Construire raw_to_normalized<br>
+                            &nbsp;&nbsp;→ Logger succès/échec<br>
+                            3. Prêt pour normalisation
+                        </div>
+                    </div>
+                    
+                    <div class="method-box">
+                        <strong>normalize_ingredient(raw)</strong>
+                        <div class="example">
+                            <strong>Normalisation unique :</strong><br>
+                            1. raw.lower().strip()<br>
+                            2. Si ingr_map existe :<br>
+                            &nbsp;&nbsp;→ Chercher dans raw_to_normalized<br>
+                            &nbsp;&nbsp;→ Retourner si trouvé<br>
+                            3. Sinon : _manual_clean(raw)<br>
+                            4. Retourner résultat normalisé
+                        </div>
+                    </div>
+                    
+                    <div class="method-box">
+                        <strong>parse_and_clean(ingredients_str)</strong>
+                        <div class="example">
+                            <strong>Parsing et nettoyage :</strong><br>
+                            1. ast.literal_eval(ingredients_str)<br>
+                            2. Pour chaque ingrédient :<br>
+                            &nbsp;&nbsp;→ normalize_ingredient(ing)<br>
+                            &nbsp;&nbsp;→ Si len > 2 : ajouter<br>
+                            3. set() pour dédupliquer<br>
+                            4. Retourner list(set)<br>
+                            5. Gérer ValueError/SyntaxError
+                        </div>
+                    </div>
+                    
+                    <div class="method-box">
+                        <strong>categorize(ingredients)</strong>
+                        <div class="example">
+                            <strong>Catégorisation :</strong><br>
+                            1. Créer defaultdict(list)<br>
+                            2. Pour chaque ingredient :<br>
+                            &nbsp;&nbsp;→ Chercher dans CATEGORIES<br>
+                            &nbsp;&nbsp;→ Recherche par substring<br>
+                            &nbsp;&nbsp;→ Si trouvé : ajouter à catégorie<br>
+                            &nbsp;&nbsp;→ Sinon : ajouter à "other"<br>
+                            3. Retourner dict(categorized)
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 6: Gestion des Erreurs -->
+            <div class="flow-section">
+                <div class="section-title">
+                    ⚠️ 6. GESTION DES ERREURS & LOGGING
+                </div>
+                
+                <div class="grid-2">
+                    <div class="example" style="border-left-color: #28a745;">
+                        <strong style="color: #28a745;">✅ SUCCESS</strong><br>
+                        <span class="code">logger.info("Ingredient map loaded successfully.")</span><br><br>
+                        <strong>Quand :</strong> ingr_map.pkl chargé avec succès
+                    </div>
+                    
+                    <div class="example" style="border-left-color: #ffc107;">
+                        <strong style="color: #ffc107;">⚠️ WARNING</strong><br>
+                        <span class="code">logger.warning("Proceeding without ingredient normalization.")</span><br><br>
+                        <strong>Quand :</strong> Échec de chargement, utilise fallback
+                    </div>
+                    
+                    <div class="example" style="border-left-color: #dc3545;">
+                        <strong style="color: #dc3545;">❌ ERROR (chargement)</strong><br>
+                        <span class="code">logger.error(f"Error loading ingredient map: {e}")</span><br><br>
+                        <strong>Quand :</strong> Exception lors du chargement du fichier
+                    </div>
+                    
+                    <div class="example" style="border-left-color: #dc3545;">
+                        <strong style="color: #dc3545;">❌ ERROR (parsing)</strong><br>
+                        <span class="code">logger.error(f"Erreur parsing ingredients: {e}")</span><br><br>
+                        <strong>Quand :</strong> ValueError ou SyntaxError dans parse_and_clean
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 7: Exemple Complet -->
+            <div class="flow-section">
+                <div class="section-title">
+                    🎯 7. EXEMPLE COMPLET DE BOUT EN BOUT
+                </div>
+                
+                <div style="background: white; padding: 20px; border-radius: 8px; border: 2px solid #3498db;">
+                    <div style="display: grid; grid-template-columns: auto 1fr; gap: 15px; align-items: start;">
+                        <div style="background: #fff3cd; padding: 10px; border-radius: 5px; font-weight: bold;">
+                            ENTRÉE
+                        </div>
+                        <div class="code" style="padding: 10px;">
+                            ingredients_str = "['2 cups all-purpose flour', '1/2 cup fresh chopped onions', '3 large eggs', '1 tsp salt']"
+                        </div>
+                        
+                        <div style="text-align: center; font-size: 24px; color: #3498db;">↓</div>
+                        <div></div>
+                        
+                        <div style="background: #d1ecf1; padding: 10px; border-radius: 5px; font-weight: bold;">
+                            ÉTAPE 1
+                        </div>
+                        <div>
+                            <strong>parse_and_clean(ingredients_str)</strong><br>
+                            → ast.literal_eval() extrait la liste<br>
+                            → ["2 cups all-purpose flour", "1/2 cup fresh chopped onions", ...]
+                        </div>
+                        
+                        <div style="text-align: center; font-size: 24px; color: #3498db;">↓</div>
+                        <div></div>
+                        
+                        <div style="background: #d1ecf1; padding: 10px; border-radius: 5px; font-weight: bold;">
+                            ÉTAPE 2
+                        </div>
+                        <div>
+                            <strong>Pour chaque élément : normalize_ingredient()</strong><br>
+                            • "2 cups all-purpose flour" → "flour"<br>
+                            • "1/2 cup fresh chopped onions" → "onion"<br>
+                            • "3 large eggs" → "egg"<br>
+                            • "1 tsp salt" → "salt"
+                        </div>
+                        
+                        <div style="text-align: center; font-size: 24px; color: #3498db;">↓</div>
+                        <div></div>
+                        
+                        <div style="background: #d1ecf1; padding: 10px; border-radius: 5px; font-weight: bold;">
+                            ÉTAPE 3
+                        </div>
+                        <div>
+                            <strong>Déduplication avec set()</strong><br>
+                            → ["flour", "onion", "egg", "salt"]
+                        </div>
+                        
+                        <div style="text-align: center; font-size: 24px; color: #3498db;">↓</div>
+                        <div></div>
+                        
+                        <div style="background: #d1ecf1; padding: 10px; border-radius: 5px; font-weight: bold;">
+                            ÉTAPE 4
+                        </div>
+                        <div>
+                            <strong>categorize(cleaned_ingredients)</strong><br>
+                            → Recherche de correspondance par substring
+                        </div>
+                        
+                        <div style="text-align: center; font-size: 24px; color: #3498db;">↓</div>
+                        <div></div>
+                        
+                        <div style="background: #d4edda; padding: 10px; border-radius: 5px; font-weight: bold;">
+                            SORTIE
+                        </div>
+                        <div class="code" style="padding: 10px;">
+                            {<br>
+                            &nbsp;&nbsp;"grains": ["flour"],<br>
+                            &nbsp;&nbsp;"vegetables": ["onion"],<br>
+                            &nbsp;&nbsp;"proteins": ["egg"],<br>
+                            &nbsp;&nbsp;"spices": ["salt"]<br>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Légende -->
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background: #fff3cd; border-color: #ffc107;"></div>
+                <span>Données d'entrée</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #d1ecf1; border-color: #17a2b8;"></div>
+                <span>Processus</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #d4edda; border-color: #28a745;"></div>
+                <span>Données de sortie</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #e7e3ff; border-color: #6f42c1;"></div>
+                <span>Classe/Structure</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #ffe5e5; border-color: #dc3545;"></div>
+                <span>Méthode</span>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+            <button onclick="window.print()" style="background: #3498db; color: white; border: none; padding: 12px 30px; border-radius: 6px; font-size: 16px; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
+                🖨️ Imprimer / Sauvegarder en PDF
+            </button>
+        </div>
+    </div>
+</body>
+</html>
